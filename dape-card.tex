@@ -1,0 +1,80 @@
+% Two-sided 8x5in reference card for dape-tutorial.org.  Build: lualatex dape-card.tex
+\documentclass[11pt]{article}
+\usepackage[paperwidth=8in,paperheight=5in,margin=0.3in]{geometry}
+\usepackage{fontspec}
+\setmonofont{DejaVu Sans Mono}[Scale=MatchLowercase]
+\newfontfamily\diagramfont{DejaVu Sans Mono}[NFSSFamily=dejavumono]
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{fancyvrb}
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\newcommand{\key}[1]{\texttt{#1}}
+
+\begin{document}
+
+{\fontsize{16}{19}\selectfont\bfseries Doom/Python debugging with Dape\par}
+\vspace{8pt}
+
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lll@{}}
+\toprule
+\textbf{Action}             & \textbf{PyCharm}              & \textbf{Here} \\
+\midrule
+Start debugging             & \key{Shift+F9}                  & \key{S-<f9>} (then \key{debugpy}) \\
+Resume                      & \key{F9}                        & \key{<f9>} \\
+Step Over                   & \key{F8}                        & \key{<f8>} \\
+Step Into                   & \key{F7}                        & \key{<f7>} \\
+Step Out                    & \key{Shift+F8}                  & \key{S-<f8>} \\
+Toggle breakpoint           & \key{Ctrl+F8} / click gutter    & \key{C-S-b} / left-click fringe \\
+Stop                        & \key{Ctrl+F2}                   & \key{S-<f5>} \\
+Conditional breakpoint      & right-click breakpoint        & middle-click fringe / \key{C-x C-a e} \\
+Log breakpoint (no suspend) & \key{Shift}-click gutter        & right-click fringe / \key{C-x C-a l} \\
+Run to Cursor               & \key{Alt+F9}                    & \key{C-x C-a u} \\
+Evaluate Expression         & \key{Alt+F8}                    & \key{C-x C-a x}, or type it in the REPL \\
+Add to Watches              & right-click → Add to Watches  & \key{C-x C-a w} (symbol at point) \\
+Rerun                       & \key{Ctrl+F5}                   & \key{C-x C-a r} \\
+Pause                       & Pause button                  & \key{C-x C-a p} \\
+Info panels (close/reopen)  & Debug tool window             & \key{C-x C-a i} \\
+Debug console               & Console tab                   & \key{C-x C-a R} (REPL) \\
+Up/down the call stack      & click in Frames               & \key{C-x C-a <} / \key{C-x C-a >} \\
+Remove all breakpoints      & Remove All Breakpoints        & \key{C-x C-a B} \\
+\bottomrule
+\end{tabular*}
+
+\newpage
+
+% The vertical box-drawing glyph is 1.188em tall in DejaVu Sans Mono; a
+% baseline just under that (10.6pt at 9pt) joins the lines between rows.
+\begin{center}
+\begin{BVerbatim}[fontfamily=dejavumono,fontsize=\fontsize{9}{10.6},baselinestretch=1]
+┌──────────┬─────────────────────────────────┬────────┐
+│ Treemacs │ ●  41  def step(x):             │ Claude │
+│          │ ▶  42      y = x * 2    x: 3    │        │
+├──────────┤    43      return y + 1         │        │
+│ Outline  ├──────────┬──────────┬───────────┤        │
+│          │ Stack    │ Scope    │ REPL      │        │
+│          │ (TAB ↻)  │ (TAB ↻)  │           │        │
+└──────────┴──────────┴──────────┴───────────┴────────┘
+\end{BVerbatim}
+\end{center}
+\vspace{2pt}
+
+\begin{tabularx}{\textwidth}{@{}ll>{\raggedright\arraybackslash}X@{}}
+\toprule
+\textbf{Panel} & \textbf{Key} & \textbf{What it does} \\
+\midrule
+Stack       & \key{RET}         & Select a frame: jump to its code and show its variables \\
+Breakpoints & \key{RET}         & Go to the breakpoint; on the exception rows (raised / uncaught)
+                                turn breaking on exceptions on or off \\
+            & \key{D} / \key{d}   & Disable a breakpoint / delete it \\
+            & \key{e}           & Edit a log breakpoint's message \\
+Scope       & \key{e}           & Expand or collapse a dict, list or object \\
+            & \key{W}           & Add the variable to Watch \\
+            & \key{=}           & Change the variable's value while paused \\
+Watch       & \key{W}           & Remove the expression from Watch \\
+            & \key{C-x C-q}     & Edit the list of watch expressions as text \\
+\bottomrule
+\end{tabularx}
+
+\end{document}
