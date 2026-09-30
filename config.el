@@ -94,7 +94,7 @@
   :init
   (setq claude-code-ide-terminal-backend 'ghostel  ; smoothest backend, per its README
         claude-code-ide-window-side 'right
-        claude-code-ide-window-width 100)
+        claude-code-ide-window-width 70)
   :config
   (claude-code-ide-emacs-tools-setup))  ; lets Claude use xref, project, etc.
 
@@ -116,15 +116,38 @@
               (dedicated . t) (preserve-size . (t . nil)))))
   (advice-add #'imenu-list-display-buffer :override #'+sf/imenu-list-side-window))
 
+;; Start maximized: five panes need the whole screen.
+(add-to-list 'initial-frame-alist '(fullscreen . maximized))
+
 ;; Left and right side windows (file tree, outline, Claude) take the full
 ;; frame height, so the bottom terminal popup spans only the editor area.
 (setq window-sides-vertical t)
+
+;; Doom's popups always span the whole frame width, ignoring the setting above,
+;; so show the ghostel terminal (C-c o t) as a plain bottom side window instead:
+;; it then sits under the editor only, like VS Code's terminal panel.
+(defadvice! +sf/ghostel-under-editor-a (fn &rest args)
+  :around #'+ghostel/toggle
+  (let ((display-buffer-overriding-action
+         '((display-buffer-in-side-window)
+           (side . bottom) (slot . 0) (window-height . 0.3)
+           (preserve-size . (nil . t)))))
+    (apply fn args)))
 
 ;; One command for the whole VS Code-like layout: file tree + outline on the
 ;; left, terminal under the editor, Claude on the right.  C-c o l.
 (defun +sf/ide-layout ()
   "Open file tree, outline, terminal and Claude around the current buffer."
   (interactive)
+  (require 'treemacs)  ; on a fresh start it isn't loaded yet
+  ;; Launched on a folder (`doom run'): start with an empty editor instead of
+  ;; a dired listing; files are opened from the tree.
+  (when (derived-mode-p 'dired-mode)
+    (let ((dired (current-buffer))
+          (root default-directory))
+      (switch-to-buffer (get-buffer-create "*scratch*"))
+      (setq default-directory root)
+      (kill-buffer dired)))
   (let ((editor (selected-window)))
     (unless (treemacs-get-local-window) (+treemacs/toggle))
     (select-window editor)
@@ -138,17 +161,24 @@
     (claude-code-ide)))
 (map! :leader :desc "IDE layout" "o l" #'+sf/ide-layout)
 
-;; Make it the default: the first time a project file is opened in a workspace,
-;; set up the layout once.  Remembered per workspace, so panes you close
-;; yourself stay closed; C-c o l brings them back.
+;; Make it the default: the first time a project file (or the project folder,
+;; in dired) is opened in this session, set up the layout once.  One session =
+;; one project (`doom [dir]' in ~/.bashrc, no daemon, no workspaces), so panes
+;; you close yourself stay closed; C-c o l brings them back.
+(defvar +sf-ide-layout-done nil)
 (defun +sf/ide-layout-maybe-h ()
-  (when (and buffer-file-name
-             (doom-project-p)
-             (bound-and-true-p persp-mode)
-             (not (persp-parameter '+sf-ide-layout)))
-    (set-persp-parameter '+sf-ide-layout t)
+  (when (and (not +sf-ide-layout-done)
+             (or buffer-file-name (derived-mode-p 'dired-mode))
+             (doom-project-p))
+    (setq +sf-ide-layout-done t)
     (run-at-time 0 nil #'+sf/ide-layout)))
 (add-hook 'find-file-hook #'+sf/ide-layout-maybe-h)
+(add-hook 'dired-mode-hook #'+sf/ide-layout-maybe-h)
+
+;; The file tree always shows the project of the current buffer, and only that:
+;; no saved project list to manage.
+(after! treemacs
+  (treemacs-project-follow-mode +1))
 
 ;; Doom's popup catch-all ("^\\*") would otherwise turn these buffers into
 ;; bottom popups; let the packages manage their own side windows instead.
