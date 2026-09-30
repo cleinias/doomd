@@ -140,14 +140,6 @@
   "Open file tree, outline, terminal and Claude around the current buffer."
   (interactive)
   (require 'treemacs)  ; on a fresh start it isn't loaded yet
-  ;; Launched on a folder (`doom run'): start with an empty editor instead of
-  ;; a dired listing; files are opened from the tree.
-  (when (derived-mode-p 'dired-mode)
-    (let ((dired (current-buffer))
-          (root default-directory))
-      (switch-to-buffer (get-buffer-create "*scratch*"))
-      (setq default-directory root)
-      (kill-buffer dired)))
   (let ((editor (selected-window)))
     (unless (treemacs-get-local-window) (+treemacs/toggle))
     (select-window editor)
@@ -163,7 +155,7 @@
 
 ;; Make it the default: the first time a project file (or the project folder,
 ;; in dired) is opened in this session, set up the layout once.  One session =
-;; one project (`doom [dir]' in ~/.bashrc, no daemon, no workspaces), so panes
+;; one project (`doom [run] [dir]' in ~/.bashrc, no daemon, no workspaces), so panes
 ;; you close yourself stay closed; C-c o l brings them back.
 (defvar +sf-ide-layout-done nil)
 (defun +sf/ide-layout-maybe-h ()
@@ -171,9 +163,52 @@
              (or buffer-file-name (derived-mode-p 'dired-mode))
              (doom-project-p))
     (setq +sf-ide-layout-done t)
-    (run-at-time 0 nil #'+sf/ide-layout)))
+    (run-at-time 0 nil #'+sf/project-startup)))
 (add-hook 'find-file-hook #'+sf/ide-layout-maybe-h)
 (add-hook 'dired-mode-hook #'+sf/ide-layout-maybe-h)
+
+;; Per-project sessions: the open files of each project are saved when Emacs
+;; exits and reopened by the next `doom run' there.  Only the buffer list is
+;; kept (no frames or windows), so the layout above is always rebuilt fresh.
+;; Each project gets its own desktop file under Doom's cache.
+(setq desktop-restore-frames nil
+      desktop-load-locked-desktop 'check-pid  ; ignore locks left by a crash
+      desktop-save t)                          ; save without asking
+(defvar +sf-desktop-dir nil
+  "Where this session's project desktop lives, once a project is opened.")
+
+(defun +sf/project-startup ()
+  "Restore the project's saved files, then build the IDE layout."
+  (require 'desktop)
+  (let* ((root (doom-project-root))
+         (launched (current-buffer))
+         (dir (file-name-concat doom-cache-dir "desktop"
+                                (replace-regexp-in-string
+                                 "/" "!" (directory-file-name root)))))
+    (make-directory dir t)
+    (setq +sf-desktop-dir dir)
+    (desktop-read dir)
+    ;; Launched on a folder (`doom run'): the editor shows the most recent
+    ;; restored file, or else an empty buffer, instead of a dired listing;
+    ;; files are opened from the tree.
+    (when (buffer-live-p launched)
+      (with-current-buffer launched
+        (when (derived-mode-p 'dired-mode)
+          (switch-to-buffer
+           (or (seq-find (lambda (b)
+                           (and (buffer-file-name b)
+                                (file-in-directory-p (buffer-file-name b) root)))
+                         (buffer-list))
+               (with-current-buffer (get-buffer-create "*scratch*")
+                 (setq default-directory root)
+                 (current-buffer))))
+          (kill-buffer launched)))))
+  (+sf/ide-layout))
+
+(add-hook 'kill-emacs-hook
+          (defun +sf/save-project-desktop-h ()
+            (when +sf-desktop-dir
+              (desktop-save +sf-desktop-dir t))))
 
 ;; The file tree always shows the project of the current buffer, and only that:
 ;; no saved project list to manage.
