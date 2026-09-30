@@ -240,6 +240,10 @@
 ;; gutter draws its bars).  `dape-breakpoint-mode' binds the fringe clicks to
 ;; act on the clicked line: left-click toggles a breakpoint, middle-click
 ;; asks for a condition, right-click asks for a log message.
+;;
+;; KDE takes Ctrl+F1..F12 for switching desktops, so PyCharm's C-<f8> and
+;; C-<f2> never reach Emacs.  They stay bound (they work if KDE lets go of
+;; them), with stand-ins: Eclipse's C-S-b and VS Code's S-<f5>.
 (use-package! dape
   :defer t
   :hook (python-base-mode . dape-breakpoint-mode)
@@ -250,7 +254,9 @@
         "<f7>"    #'dape-step-in              ; Step Into
         "S-<f8>"  #'dape-step-out             ; Step Out
         "C-<f8>"  #'dape-breakpoint-toggle    ; Toggle Breakpoint
-        "C-<f2>"  #'dape-quit)                ; Stop
+        "C-S-b"   #'dape-breakpoint-toggle
+        "C-<f2>"  #'dape-quit                 ; Stop
+        "S-<f5>"  #'dape-quit)
   :config
   ;; dape's stock debugpy config runs the adapter and the debugged program with
   ;; the same interpreter (debugpy's :python defaults to the adapter's own
@@ -287,10 +293,59 @@ else a .venv/ or venv/ in the project root, else plain \"python\"."
     (funcall +sf/debugpy-stock-ensure config)
     (process-file (dape-config-get config 'command) nil nil nil "-c"
                   "import importlib.metadata as m; [d.version for d in m.distributions()]"))
+  ;; The program's output goes to the REPL, as in PyCharm's debug console,
+  ;; rather than to a *dape-shell* terminal of its own (which would need a
+  ;; fourth panel).  The price: the program can't read stdin (`input()').
+  ;; debugpy then reports each line twice, once from the program's stdout pipe
+  ;; and once more from inside the program (`redirectOutput', on by default
+  ;; with this console); the pipe alone still arrives live.
   (dolist (key '(debugpy debugpy-module))
     (plist-put (alist-get key dape-configs) 'command "python3")
     (plist-put (alist-get key dape-configs) :python #'+sf/python-executable)
-    (plist-put (alist-get key dape-configs) 'ensure #'+sf/debugpy-ensure)))
+    (plist-put (alist-get key dape-configs) 'ensure #'+sf/debugpy-ensure)
+    (plist-put (alist-get key dape-configs) :console "internalConsole")
+    (plist-put (alist-get key dape-configs) :redirectOutput :json-false))
+
+  ;; PyCharm's Debug tool window: a strip under the editor with the call stack
+  ;; (TAB cycles through Breakpoints, Threads, Modules, Sources), the variables
+  ;; (TAB: Watch) and the REPL.  dape's own arrangements put its panels in the
+  ;; left or right side-window slots, where the file tree, outline and Claude
+  ;; already live, and evict them.  With no arrangement dape leaves placement
+  ;; to `display-buffer-alist', tagging each info group with the `category'
+  ;; dape-info-<group index>.
+  (setq dape-buffer-window-arrangement nil
+        dape-info-buffer-window-groups
+        '((dape-info-stack-mode dape-info-breakpoints-mode dape-info-threads-mode
+           dape-info-modules-mode dape-info-sources-mode)
+          (dape-info-scope-mode dape-info-watch-mode)))
+  (pcase-dolist (`(,condition . ,slot) '(((category . dape-info-0) . -1)
+                                         ((category . dape-info-1) . 0)
+                                         ("\\`\\*dape-repl\\*\\'" . 1)))
+    (add-to-list 'display-buffer-alist
+                 `(,condition
+                   (display-buffer-reuse-window display-buffer-in-side-window)
+                   (side . bottom) (slot . ,slot) (window-height . 0.3)
+                   (preserve-size . (nil . t)))))
+
+  ;; The terminal lives in that strip too: it steps aside when a session
+  ;; starts and comes back once dape quits (which kills the REPL).  The
+  ;; restore waits for dape to finish killing its buffers, so the terminal
+  ;; doesn't land in a panel window that is about to close.
+  (defvar +sf/dape-hid-terminal nil
+    "Non-nil while a dape session has put the terminal aside.")
+  (defun +sf/dape-hide-terminal-h ()
+    (dolist (window (window-list))
+      (when (string-match-p "ghostel" (buffer-name (window-buffer window)))
+        (delete-window window)
+        (setq +sf/dape-hid-terminal t))))
+  (defun +sf/dape-restore-terminal-h ()
+    (when +sf/dape-hid-terminal
+      (setq +sf/dape-hid-terminal nil)
+      (run-at-time 0 nil (lambda () (save-selected-window (+ghostel/toggle))))))
+  (defun +sf/dape-watch-repl-h ()
+    (add-hook 'kill-buffer-hook #'+sf/dape-restore-terminal-h nil t))
+  (add-hook 'dape-start-hook #'+sf/dape-hide-terminal-h -90)  ; before the panels open
+  (add-hook 'dape-repl-mode-hook #'+sf/dape-watch-repl-h))
 
 ;; Doom's popup catch-all ("^\\*") would otherwise turn these buffers into
 ;; bottom popups; let the packages manage their own side windows instead.
