@@ -1,5 +1,9 @@
 #+title: Debugging Python with dape
 #+startup: showall
+#+options: toc:nil ':t
+#+latex_compiler: lualatex
+#+latex_header: \usepackage{fontspec}
+#+latex_header: \setmonofont{DejaVu Sans Mono}[Scale=MatchLowercase]
 
 How the dape setup in =config.el= looks and works.  The keys follow PyCharm,
 except where KDE takes Ctrl+F1..F12 for switching desktops.
@@ -16,7 +20,7 @@ except where KDE takes Ctrl+F1..F12 for switching desktops.
 | Toggle breakpoint           | =Ctrl+F8= / click gutter     | ~C-S-b~ / left-click fringe         |
 | Stop                        | =Ctrl+F2=                    | ~S-<f5>~                            |
 | Conditional breakpoint      | right-click breakpoint       | middle-click fringe / ~C-x C-a e~   |
-| Log breakpoint (no suspend) | =Shift=+click gutter         | right-click fringe / ~C-x C-a l~    |
+| Log breakpoint (no suspend) | =Shift=-click gutter         | right-click fringe / ~C-x C-a l~    |
 | Run to Cursor               | =Alt+F9=                     | ~C-x C-a u~                         |
 | Evaluate Expression         | =Alt+F8=                     | ~C-x C-a x~, or type it in the REPL |
 | Add to Watches              | right-click → Add to Watches | ~C-x C-a w~ (symbol at point)       |
