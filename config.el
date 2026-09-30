@@ -351,3 +351,9 @@ else a .venv/ or venv/ in the project root, else plain \"python\"."
 ;; bottom popups; let the packages manage their own side windows instead.
 (set-popup-rule! "^\\*claude-code\\[" :ignore t)
 (set-popup-rule! "^\\*Ilist\\*" :ignore t)
+
+;; Printing (M-x print-buffer, lpr-region, ps-print-buffer, P in dired): the
+;; Brother laser on USB, passed to lpr as -P.  Without it lpr falls back to
+;; CUPS's default printer, which may be unset or stale.
+(setq printer-name "Brother_Polus"
+      ps-printer-name nil)                ; nil: follow `printer-name'
