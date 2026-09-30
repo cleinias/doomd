@@ -230,8 +230,8 @@
   (treemacs-project-follow-mode +1))
 
 ;; Python debugging with dape: a Debug Adapter Protocol client driving debugpy,
-;; the same debug adapter VS Code uses.  The interpreter that runs the code
-;; needs debugpy installed (`pip install debugpy' inside the project's venv).
+;; the same debug adapter VS Code uses.  debugpy must be installed for the
+;; system python3 only; projects and their venvs need nothing (see :config).
 ;;
 ;; PyCharm's debugger keys.  As in PyCharm, clicking the gutter sets
 ;; breakpoints -- except that Emacs cannot make the line numbers themselves
