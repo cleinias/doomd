@@ -210,6 +210,20 @@
             (when +sf-desktop-dir
               (desktop-save +sf-desktop-dir t))))
 
+;; Switching projects = a new window with its own session, like `doom run DIR'
+;; in a terminal: pick from the projects opened before.  C-c o w.
+(defun +sf/open-project-window (dir)
+  "Open project DIR in a new, independent Doom Emacs window."
+  (interactive
+   (list (completing-read "Open project in new window: "
+                          (projectile-relevant-known-projects) nil t)))
+  (let ((default-directory (file-name-as-directory (expand-file-name dir))))
+    ;; setsid + no wait: the new Emacs outlives this one.
+    (call-process "setsid" nil 0 nil
+                  (expand-file-name invocation-name invocation-directory)
+                  "--init-directory" doom-emacs-dir default-directory)))
+(map! :leader :desc "Project in new window" "o w" #'+sf/open-project-window)
+
 ;; The file tree always shows the project of the current buffer, and only that:
 ;; no saved project list to manage.
 (after! treemacs
