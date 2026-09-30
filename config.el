@@ -229,6 +229,53 @@
 (after! treemacs
   (treemacs-project-follow-mode +1))
 
+;; Python debugging with dape: a Debug Adapter Protocol client driving debugpy,
+;; the same debug adapter VS Code uses.  The interpreter that runs the code
+;; needs debugpy installed (`pip install debugpy' inside the project's venv).
+;;
+;; PyCharm's debugger keys.  As in PyCharm, clicking the gutter sets
+;; breakpoints -- except that Emacs cannot make the line numbers themselves
+;; clickable, so the dot and the click land in the fringe, the thin strip at
+;; the window's left edge, left of the numbers (the same strip where the git
+;; gutter draws its bars).  `dape-breakpoint-mode' binds the fringe clicks to
+;; act on the clicked line: left-click toggles a breakpoint, middle-click
+;; asks for a condition, right-click asks for a log message.
+(use-package! dape
+  :defer t
+  :hook (python-base-mode . dape-breakpoint-mode)
+  :init
+  (map! "S-<f9>"  #'dape                      ; Debug: start a session
+        "<f9>"    #'dape-continue             ; Resume
+        "<f8>"    #'dape-next                 ; Step Over
+        "<f7>"    #'dape-step-in              ; Step Into
+        "S-<f8>"  #'dape-step-out             ; Step Out
+        "C-<f8>"  #'dape-breakpoint-toggle    ; Toggle Breakpoint
+        "C-<f2>"  #'dape-quit)                ; Stop
+  :config
+  ;; dape's stock debugpy config runs the adapter and the debugged program with
+  ;; the same interpreter (debugpy's :python defaults to the adapter's own
+  ;; sys.executable), so the project's venv would need its own debugpy.  Split
+  ;; the two instead: the adapter runs on the system python, which has debugpy,
+  ;; and launches the program with the project's interpreter.  debugpy hands its
+  ;; launcher to that interpreter as a file path rather than importing it, so a
+  ;; project needs nothing installed.  dape calls a function given as a config
+  ;; value, the same way it uses `dape-cwd'.
+  (defun +sf/python-executable ()
+    "Interpreter to debug with: the active virtualenv or conda environment,
+else a .venv/ or venv/ in the project root, else plain \"python\"."
+    (let ((root (or (doom-project-root) default-directory)))
+      (or (seq-find
+           #'file-executable-p
+           (mapcar (lambda (dir) (expand-file-name "bin/python" dir))
+                   (delq nil (list (getenv "VIRTUAL_ENV")   ; pyvenv, direnv, activated shell
+                                   (getenv "CONDA_PREFIX")
+                                   (expand-file-name ".venv" root)
+                                   (expand-file-name "venv" root)))))
+          "python")))
+  (dolist (key '(debugpy debugpy-module))
+    (plist-put (alist-get key dape-configs) 'command "python3")
+    (plist-put (alist-get key dape-configs) :python #'+sf/python-executable)))
+
 ;; Doom's popup catch-all ("^\\*") would otherwise turn these buffers into
 ;; bottom popups; let the packages manage their own side windows instead.
 (set-popup-rule! "^\\*claude-code\\[" :ignore t)

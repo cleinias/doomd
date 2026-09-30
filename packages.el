@@ -58,3 +58,7 @@
 
 ;; Outline sidebar (VS Code's "Outline" view) built on imenu
 (package! imenu-list)
+
+;; Python (and other) debugging: a Debug Adapter Protocol client driving
+;; debugpy, the same debug adapter VS Code uses.  Needs no lsp-mode.
+(package! dape)
