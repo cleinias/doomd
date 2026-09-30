@@ -272,9 +272,25 @@ else a .venv/ or venv/ in the project root, else plain \"python\"."
                                    (expand-file-name ".venv" root)
                                    (expand-file-name "venv" root)))))
           "python")))
+  ;; Before opening its port, debugpy's adapter reads the metadata of every
+  ;; package installed for its python (~600 on the system python) just to log
+  ;; them, logging on or not.  On a cold disk cache that takes ~5 s, longer
+  ;; than the ~3 s dape waits for the port, and the session dies with "Unable
+  ;; to connect to dap server".  So read the same files first, in the config's
+  ;; `ensure' step, which dape runs to completion before starting the adapter;
+  ;; the adapter then finds them cached.  The defvar keeps dape's own `ensure'
+  ;; (shared by both debugpy configs) across config reloads.
+  (defvar +sf/debugpy-stock-ensure
+    (plist-get (alist-get 'debugpy dape-configs) 'ensure))
+  (defun +sf/debugpy-ensure (config)
+    "Run dape's debugpy checks, then warm the cache of package metadata."
+    (funcall +sf/debugpy-stock-ensure config)
+    (process-file (dape-config-get config 'command) nil nil nil "-c"
+                  "import importlib.metadata as m; [d.version for d in m.distributions()]"))
   (dolist (key '(debugpy debugpy-module))
     (plist-put (alist-get key dape-configs) 'command "python3")
-    (plist-put (alist-get key dape-configs) :python #'+sf/python-executable)))
+    (plist-put (alist-get key dape-configs) :python #'+sf/python-executable)
+    (plist-put (alist-get key dape-configs) 'ensure #'+sf/debugpy-ensure)))
 
 ;; Doom's popup catch-all ("^\\*") would otherwise turn these buffers into
 ;; bottom popups; let the packages manage their own side windows instead.
