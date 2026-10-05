@@ -14,7 +14,7 @@ except where KDE takes Ctrl+F1..F12 for switching desktops.
 |-----------------------------+------------------------------+-------------------------------------|
 | Start debugging             | =Shift+F9=                   | ~S-<f9>~ (then =debugpy=)           |
 | Resume                      | =F9=                         | ~<f9>~                              |
-| Step Over                   | =F8=                         | ~<f8>~                              |
+| Step Over                   | =F8=     >~                              |
 | Step Into                   | =F7=                         | ~<f7>~                              |
 | Step Out                    | =Shift+F8=                   | ~S-<f8>~                            |
 | Toggle breakpoint           | =Ctrl+F8= / click gutter     | ~C-S-b~ / left-click fringe         |
