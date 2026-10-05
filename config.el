@@ -357,3 +357,23 @@ else a .venv/ or venv/ in the project root, else plain \"python\"."
 ;; CUPS's default printer, which may be unset or stale.
 (setq printer-name "Brother_Polus"
       ps-printer-name nil)                ; nil: follow `printer-name'
+
+
+;; Export from markdown to lualatex
+;; With mathfont set, pandoc's template loads unicode-math
+;; and fontspec under \ifLuaTeX/\ifXeTeX guards,
+;; so the file works when you compile with lualatex.
+;; (after! markdown-mode
+;;  (setq markdown-command
+;;        "pandoc -f markdown -t latex -s -V mainfont='Minion Pro' sanseriffont='Myriad Pro' -V mathfont='Libertinus Math'"))
+
+;; view markdown in browser
+(defun my/markdown-preview-html ()
+  "Preview the markdown buffer as HTML in the browser."
+  (interactive)
+  (let ((markdown-command "pandoc -f gfm -t html5 -s"))
+    (markdown-preview)))
+
+(after! markdown-mode
+  (add-to-list 'display-buffer-alist
+               '("\\.html # eww\\*\\(<[0-9]+>\\)?\\'" (display-buffer-pop-up-frame))))
