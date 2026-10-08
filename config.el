@@ -221,12 +221,16 @@ if there is one, else on the next monitor.  With one monitor, return nil."
           ((equal name "*Ilist*") 'outline)
           ((string-match-p "ghostel" name) 'term))))
 
-(defun +sf/display-panel (buffer alist)
+(defun +sf/display-panel (buffer _alist)
   "Show panel BUFFER in its place in the panel frame.
 The file tree goes top left, the outline top right, the terminal across the
 bottom half; a window that shows no panel is used first.  For use in
 `display-buffer-overriding-action': BUFFERs that aren't panels are left to
-the other display actions."
+the other display actions.
+
+The display ALIST is ignored: it also holds the sizes and window parameters
+of the other actions, such as Doom's popup rule for the terminal (35% of the
+frame), which would undo the even split."
   (when-let* ((kind (+sf/panel-kind buffer))
               ((frame-live-p +sf-panel-frame)))
     (or (get-buffer-window buffer +sf-panel-frame)
@@ -246,7 +250,7 @@ the other display actions."
                       ((and (eq kind 'outline) tree) (split-window tree nil 'right))
                       (term (split-window term nil 'above)))))
           (when window
-            (prog1 (window--display-buffer buffer window (if spare 'reuse 'window) alist)
+            (prog1 (window--display-buffer buffer window (if spare 'reuse 'window) nil)
               (set-window-dedicated-p window t)))))))
 
 (defun +sf/in-panel-frame-a (fn &rest args)
