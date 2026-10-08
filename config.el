@@ -44,7 +44,12 @@
   ;; BibTeX and YAML are text modes too, but they are data: keep them aligned.
   (defun +sf/mixed-pitch-maybe-h ()
     (unless (derived-mode-p 'bibtex-mode 'yaml-mode)
-      (mixed-pitch-mode 1))))
+      (mixed-pitch-mode 1)))
+  :config
+  ;; LaTeX verbatim text stays monospaced, like code in Org and Markdown:
+  ;; \verb, the verbatim environment, and lstlisting or minted in documents
+  ;; that load listings or minted.
+  (add-to-list 'mixed-pitch-fixed-pitch-faces 'font-latex-verbatim-face))
 
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
