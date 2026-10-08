@@ -29,16 +29,27 @@
 ;; refresh your font settings. If Emacs still can't find your font, it likely
 ;; wasn't installed correctly. Font issues are rarely Doom issues!
 
-;; Bigger text: 14 pt instead of Emacs's default of about 10-11.  "Monospace"
-;; is fontconfig's name for the system's default monospace font, the one Emacs
-;; used so far.  A float :size is in points.  Try other sizes with M-x
-;; doom/increase-font-size and doom/decrease-font-size.
-(setq doom-font (font-spec :family "Monospace" :size 14.0))
+;; Fonts: prose in Noto Serif, everything else in Hack, both at 12 pt (a float
+;; :size is in points).  Text buffers -- Markdown, Org, LaTeX, plain text,
+;; commit messages -- use `mixed-pitch-mode' (below), which shows them in the
+;; variable-pitch font but keeps code, tables and line numbers monospaced.
+;; Code, the file tree, the outline and the terminals, Claude's included, stay
+;; in Hack: a terminal draws on a grid of equal-width cells.
+(setq doom-font (font-spec :family "Hack" :size 12.0)
+      doom-variable-pitch-font (font-spec :family "Noto Serif" :size 12.0))
+
+(use-package! mixed-pitch
+  :hook (text-mode . +sf/mixed-pitch-maybe-h)
+  :init
+  ;; BibTeX and YAML are text modes too, but they are data: keep them aligned.
+  (defun +sf/mixed-pitch-maybe-h ()
+    (unless (derived-mode-p 'bibtex-mode 'yaml-mode)
+      (mixed-pitch-mode 1))))
 
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
-(setq doom-theme 'doom-one)
+(setq doom-theme 'modus-operandi-tinted)  ; built in: high-contrast light theme
 ;; Specify both a dark and light theme, like so and Doom will choose which one
 ;; to load based on your system light/dark setting:
 ;;
