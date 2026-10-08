@@ -374,6 +374,41 @@ else a .venv/ or venv/ in the project root, else plain \"python\"."
   (let ((markdown-command "pandoc -f gfm -t html5 -s"))
     (markdown-preview)))
 
+;; Live preview (C-c C-c l) renders in eww, in its own Emacs frame.
+;; An entry in `display-buffer-alist' does not survive Doom's popup
+;; system (+popup-mode replaces the alist), so override the function
+;; markdown-mode uses to show the preview instead.  Reuses the preview
+;; frame if it is already open.
 (after! markdown-mode
-  (add-to-list 'display-buffer-alist
-               '("\\.html # eww\\*\\(<[0-9]+>\\)?\\'" (display-buffer-pop-up-frame))))
+  (defadvice! my/markdown-preview-in-own-frame (buf)
+    :override #'markdown-display-buffer-other-window
+    (display-buffer buf '((display-buffer-reuse-window display-buffer-pop-up-frame)
+                          (reusable-frames . t)
+                          (inhibit-same-window . t)))))
+
+;; After C-x 5 0 the "Close frame? (y or n)" prompt, already answered
+;; in the closed frame, lingers in the main frame's echo area and looks
+;; like a second prompt; keys typed at it go to the focused buffer.
+;; Clear the echo area once a frame is gone.
+(defun my/clear-echo-area-after-frame-delete (_frame)
+  (run-at-time 0 nil (lambda () (message nil) (redraw-display))))
+(add-hook 'after-delete-frame-functions #'my/clear-echo-area-after-frame-delete)
+
+;; Close frames without confirmation: undo Doom's remap of `delete-frame'
+;; to `doom/delete-frame-with-prompt'.  Plain `delete-frame' refuses to
+;; delete the last frame, so C-x 5 0 cannot quit Emacs by accident.
+(global-set-key [remap delete-frame] nil)
+
+;Alternative leader key
+;(setq doom-leader-alt-key "<f8>"
+;      doom-localleader-alt-key "<f8> m")
+
+(after! evil
+  (setq evil-default-state 'emacs))
+
+
+;; pdf-tools printing (C-c C-p): use lpr to the default CUPS printer
+;; instead of prompting for a print program every time.
+(after! pdf-misc
+  (setq pdf-misc-print-program-executable "/usr/bin/lpr"
+        pdf-misc-print-program-args '("-o" "sides=two-sided-long-edge")))

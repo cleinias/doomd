@@ -1,0 +1,159 @@
+% Created 2026-09-30 Wed 15:28
+% Intended LaTeX compiler: lualatex
+\documentclass[11pt]{article}
+
+\usepackage{amsmath}
+\usepackage{fontspec}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{wrapfig}
+\usepackage{rotating}
+\usepackage[normalem]{ulem}
+\usepackage{capt-of}
+\usepackage{hyperref}
+\usepackage{fontspec}
+\setmonofont{DejaVu Sans Mono}[Scale=MatchLowercase]
+\date{\today}
+\title{Debugging Python with dape}
+\hypersetup{
+ pdfauthor={},
+ pdftitle={Debugging Python with dape},
+ pdfkeywords={},
+ pdfsubject={},
+ pdfcreator={},
+ pdflang={English}}
+\usepackage{biblatex}
+
+\begin{document}
+
+\maketitle
+How the dape setup in \texttt{config.el} looks and works.  The keys follow PyCharm,
+except where KDE takes Ctrl+F1..F12 for switching desktops.
+\section{Keys}
+\label{sec:org64fe645}
+
+\begin{center}
+\begin{tabular}{lll}
+Action & PyCharm & Here\\
+\hline
+Start debugging & \texttt{Shift+F9} & \texttt{S-<f9>} (then \texttt{debugpy})\\
+Resume & \texttt{F9} & \texttt{<f9>}\\
+Step Over & \texttt{F8}     >\textasciitilde{}\\
+Step Into & \texttt{F7} & \texttt{<f7>}\\
+Step Out & \texttt{Shift+F8} & \texttt{S-<f8>}\\
+Toggle breakpoint & \texttt{Ctrl+F8} / click gutter & \texttt{C-S-b} / left-click fringe\\
+Stop & \texttt{Ctrl+F2} & \texttt{S-<f5>}\\
+Conditional breakpoint & right-click breakpoint & middle-click fringe / \texttt{C-x C-a e}\\
+Log breakpoint (no suspend) & \texttt{Shift}-click gutter & right-click fringe / \texttt{C-x C-a l}\\
+Run to Cursor & \texttt{Alt+F9} & \texttt{C-x C-a u}\\
+Evaluate Expression & \texttt{Alt+F8} & \texttt{C-x C-a x}, or type it in the REPL\\
+Add to Watches & right-click → Add to Watches & \texttt{C-x C-a w} (symbol at point)\\
+Rerun & \texttt{Ctrl+F5} & \texttt{C-x C-a r}\\
+Pause & Pause button & \texttt{C-x C-a p}\\
+Info panels (close/reopen) & Debug tool window & \texttt{C-x C-a i}\\
+Debug console & Console tab & \texttt{C-x C-a R} (REPL)\\
+Up/down the call stack & click in Frames & \texttt{C-x C-a <} / \texttt{C-x C-a >}\\
+Remove all breakpoints & Remove All Breakpoints & \texttt{C-x C-a B}\\
+\end{tabular}
+\end{center}
+
+\texttt{C-<f8>} and \texttt{C-<f2>} are bound too, but only reach Emacs if KDE's ``Switch to
+Desktop 8/2'' shortcuts are freed.  The \texttt{C-x C-a} prefix exists once dape has
+loaded, which happens when a Python file is opened.  Not in dape: Smart Step
+Into, Mute Breakpoints, Force Step Into.
+\section{The screen while debugging}
+\label{sec:orga28fd0d}
+
+\begin{verbatim}
+┌──────────┬─────────────────────────────────┬────────┐
+│ Treemacs │ ●  41  def step(x):             │ Claude │
+│          │ ▶  42      y = x * 2    x: 3    │        │
+│──────────│    43      return y + 1         │        │
+│ Outline  ├──────────┬──────────┬───────────┤        │
+│          │ Stack    │ Scope    │ REPL      │        │
+│          │ (TAB ↻)  │ (TAB ↻)  │           │        │
+└──────────┴──────────┴──────────┴───────────┴────────┘
+\end{verbatim}
+
+\begin{itemize}
+\item In the editor, \texttt{●} in the fringe (the thin strip at the window's left
+edge, left of the line numbers) is a breakpoint, \texttt{▶} marks the line about
+to run, and the grey text after the current and previous lines shows the
+values of their variables.
+\item The terminal steps aside while a session runs and comes back on quit.
+\item Each panel's header line lists its tabs; \texttt{TAB} / \texttt{S-TAB} cycle through them,
+or click one.  Left panel: Stack, Breakpoints, Threads, Modules, Sources.
+Middle panel: Scope, Watch.
+\end{itemize}
+\section{A first session}
+\label{sec:orgb7058dc}
+
+\begin{enumerate}
+\item Open a script and left-click the fringe next to a line inside a function
+or loop (or \texttt{C-S-b} on that line).
+\item \texttt{S-<f9>}.  The first time, type \texttt{debugpy} (\texttt{TAB} completes) and \texttt{RET}; it
+runs the current file.  Afterwards the prompt comes pre-filled with the
+last command.  To pass command-line arguments, add them before \texttt{RET}:
+\texttt{debugpy :args ["-{}-{}steps" "100"]}.  (\texttt{debugpy-module} runs the current
+directory as a package, like \texttt{python -m}.)
+\item The program runs up to the breakpoint; Scope shows the local variables.
+\item \texttt{<f8>} a few times to step over lines and watch the values change.
+\texttt{<f7>} on a function call steps into it; \texttt{S-<f8>} steps back out.
+\item In Stack, move to a lower frame and \texttt{RET}: the editor jumps to the caller
+and Scope shows the caller's variables.  Stepping always continues from
+the top frame.
+\item \texttt{<f9>} continues to the next breakpoint.
+\item \texttt{S-<f5>} quits: the panels close and the terminal comes back.  If the
+program finishes by itself, the REPL says ``Session terminated''; \texttt{S-<f5>}
+still closes the panels.
+\end{enumerate}
+\section{The panels}
+\label{sec:orgdf461ba}
+
+\begin{center}
+\begin{tabular}{lll}
+Panel & Key & What it does\\
+\hline
+Stack & \texttt{RET} & Select a frame: jump to its code and show its variables\\
+Breakpoints & \texttt{RET} & Go to the breakpoint; on the exception rows (raised / uncaught)\\
+ &  & turn breaking on exceptions on or off\\
+ & \texttt{D} / \texttt{d} & Disable a breakpoint / delete it\\
+ & \texttt{e} & Edit a log breakpoint's message\\
+Scope & \texttt{e} & Expand or collapse a dict, list or object\\
+ & \texttt{W} & Add the variable to Watch\\
+ & \texttt{=} & Change the variable's value while paused\\
+Watch & \texttt{W} & Remove the expression from Watch\\
+ & \texttt{C-x C-q} & Edit the list of watch expressions as text\\
+\end{tabular}
+\end{center}
+
+In Scope and Watch, \texttt{RET} does one of those three things depending on where
+the cursor is: on the \texttt{+} / \texttt{-} it expands, on the name it adds to Watch, on
+the value it edits.  To watch a variable straight from the code, put the
+cursor on it and press \texttt{C-x C-a w}.
+\section{The REPL}
+\label{sec:orga355352}
+
+\begin{itemize}
+\item It shows everything the program prints.  The program can't read keyboard
+input (\texttt{input()}) in this setup.
+\item While paused, type any Python expression and it is evaluated in the
+selected frame: \texttt{len(sensors)}, \texttt{x * 2}, \texttt{vars(self)}.  Assignments such as
+\texttt{x = 5} work too.
+\item One-letter commands: \texttt{n} step over, \texttt{s} step into, \texttt{o} step out,
+\texttt{c} continue, \texttt{r} restart, \texttt{q} quit.  \texttt{RET} on an empty line repeats the
+last command, so \texttt{n} \texttt{RET RET RET} steps quickly.
+\item A variable named like a command (\texttt{b c d e k m n o p q r s t u w}) runs the
+command instead.  Type a space before the name to see the variable, as in `` n''.
+\end{itemize}
+\section{Breakpoints that don't just stop}
+\label{sec:orgf75866a}
+
+\begin{itemize}
+\item Conditional: middle-click the fringe (or \texttt{C-x C-a e}) and enter a
+condition such as \texttt{i == 50}.  The program stops only when it is true.
+\item Log: right-click the fringe (or \texttt{C-x C-a l}) and enter a message such as
+\texttt{step \{i\}: x=\{x\}}.  The program doesn't stop; each hit prints the message
+in the REPL.  Expressions go in \texttt{\{\}}.
+\end{itemize}
+\end{document}
