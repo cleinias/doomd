@@ -29,6 +29,12 @@
 ;; refresh your font settings. If Emacs still can't find your font, it likely
 ;; wasn't installed correctly. Font issues are rarely Doom issues!
 
+;; Bigger text: 14 pt instead of Emacs's default of about 10-11.  "Monospace"
+;; is fontconfig's name for the system's default monospace font, the one Emacs
+;; used so far.  A float :size is in points.  Try other sizes with M-x
+;; doom/increase-font-size and doom/decrease-font-size.
+(setq doom-font (font-spec :family "Monospace" :size 14.0))
+
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
@@ -88,7 +94,8 @@
       "C-S-<prior>" #'centaur-tabs-move-current-tab-to-left
       "C-S-<next>"  #'centaur-tabs-move-current-tab-to-right)
 
-;; Claude Code IDE: Claude in a side window on the right, like VS Code.
+;; Claude Code IDE: Claude in a side window on the right of the editor.  Its
+;; width is set to a third of the editor frame when the layout is built.
 (use-package! claude-code-ide
   :bind ("C-c C-'" . claude-code-ide-menu)
   :init
@@ -98,8 +105,7 @@
   :config
   (claude-code-ide-emacs-tools-setup))  ; lets Claude use xref, project, etc.
 
-;; Outline sidebar under the Treemacs file tree (VS Code's Outline view);
-;; toggle with C-c o i.
+;; Outline sidebar (VS Code's Outline view); toggle with C-c o i.
 (use-package! imenu-list
   :defer t
   :init
@@ -107,38 +113,243 @@
         imenu-list-auto-resize nil)
   (map! :leader :desc "Outline sidebar" "o i" #'imenu-list-smart-toggle)
   :config
-  ;; imenu-list normally splits the whole frame into a new column.  Show it
-  ;; instead as a left side window in the slot below Treemacs (slot -1), so the
-  ;; two stack vertically like VS Code's Explorer and Outline.
+  ;; imenu-list normally splits the whole frame into a new column.  With one
+  ;; frame, show it instead as a left side window in the slot below Treemacs
+  ;; (slot -1), so the two stack vertically like VS Code's Explorer and Outline.
+  ;; With two frames it already sits in the panel frame: keep it there.
   (defun +sf/imenu-list-side-window (buffer _alist)
-    (display-buffer-in-side-window
-     buffer '((side . left) (slot . 1) (window-height . 0.4)
-              (dedicated . t) (preserve-size . (t . nil)))))
-  (advice-add #'imenu-list-display-buffer :override #'+sf/imenu-list-side-window))
+    (or (get-buffer-window buffer 'visible)
+        (display-buffer-in-side-window
+         buffer '((side . left) (slot . 1) (window-height . 0.4)
+                  (dedicated . t) (preserve-size . (t . nil))))))
+  (advice-add #'imenu-list-display-buffer :override #'+sf/imenu-list-side-window)
+  ;; Highlighting the entry at point looks for the outline in the selected
+  ;; frame only; look in the panel frame too.
+  (defadvice! +sf/imenu-list-show-current-entry-a ()
+    :override #'imenu-list--show-current-entry
+    (when-let* ((window (get-buffer-window (imenu-list-get-buffer-create) 'visible)))
+      (let ((line-number (cl-position (imenu-list--current-entry)
+                                      imenu-list--line-entries
+                                      :test 'equal)))
+        (with-selected-window window
+          (goto-char (point-min))
+          (forward-line line-number)
+          (hl-line-mode 1))))))
 
-;; Start maximized: five panes need the whole screen.
+;; Start maximized: the panes need the whole screen.
 (add-to-list 'initial-frame-alist '(fullscreen . maximized))
 
 ;; Left and right side windows (file tree, outline, Claude) take the full
 ;; frame height, so the bottom terminal popup spans only the editor area.
 (setq window-sides-vertical t)
 
-;; Doom's popups always span the whole frame width, ignoring the setting above,
-;; so show the ghostel terminal (C-c o t) as a plain bottom side window instead:
-;; it then sits under the editor only, like VS Code's terminal panel.
-(defadvice! +sf/ghostel-under-editor-a (fn &rest args)
-  :around #'+ghostel/toggle
-  (let ((display-buffer-overriding-action
-         '((display-buffer-in-side-window)
-           (side . bottom) (slot . 0) (window-height . 0.3)
-           (preserve-size . (nil . t)))))
-    (apply fn args)))
+;;; Two monitors, two frames
+;;
+;; With a landscape and a portrait monitor (screen 0 and screen 1), the layout
+;; uses one frame on each:
+;;
+;;   editor frame, landscape         panel frame, portrait
+;;   +-------------------+-------+   +-----------+-----------+
+;;   |                   |       |   | file tree |  outline  |
+;;   |      editor       |Claude |   +-----------+-----------+
+;;   |                   |       |   |        terminal       |
+;;   +-------------------+-------+   +-----------------------+
+;;
+;; Everything opened from the panel frame (files from the tree, outline
+;; entries, C-x C-f in the terminal) lands in the editor frame.  The panel
+;; toggles (C-c o p, C-c o i, C-c o t) act on the panel frame from either
+;; frame; C-c o l rebuilds both.  Closing the editor frame quits Emacs;
+;; closing the panel frame just closes it.  With a single monitor, everything
+;; goes in one frame as before.
+;;
+;; On X11 the frames are placed on their monitors here.  On Wayland Emacs can't
+;; place its frames: add a KWin window rule (System Settings > Window
+;; Management > Window Rules) sending the window titled "Doom panels" to the
+;; portrait screen.
 
-;; One command for the whole VS Code-like layout: file tree + outline on the
-;; left, terminal under the editor, Claude on the right.  C-c o l.
-(defun +sf/ide-layout ()
+(defvar +sf-editor-frame nil "The frame with the editor and Claude.")
+(defvar +sf-panel-frame nil "The frame with the file tree, outline and terminal.")
+
+(defun +sf/two-frames-p ()
+  (and (frame-live-p +sf-panel-frame) (frame-live-p +sf-editor-frame)))
+
+(defun +sf/monitors ()
+  "With two monitors or more, return (EDITOR-MONITOR . PANEL-MONITOR).
+The editor goes on the first landscape monitor, the panels on a portrait one
+if there is one, else on the next monitor.  With one monitor, return nil."
+  (let* ((monitors (display-monitor-attributes-list))
+         (portrait-p (lambda (monitor)
+                       (pcase-let ((`(,_ ,_ ,width ,height)
+                                    (alist-get 'geometry monitor)))
+                         (> height width))))
+         (editor (car (or (seq-remove portrait-p monitors) monitors)))
+         (others (remq editor monitors))
+         (panels (or (seq-find portrait-p others) (car others))))
+    (when panels (cons editor panels))))
+
+(defun +sf/frame-position (monitor)
+  "Frame parameters putting a frame at the top left of MONITOR.
+\(+ N) is an absolute position, even when N is negative."
+  (pcase-let ((`(,x ,y . ,_) (alist-get 'workarea monitor)))
+    `((left . (+ ,x)) (top . (+ ,y)) (user-position . t))))
+
+(defun +sf/place-frame (frame monitor)
+  "Move FRAME to MONITOR unless it is already there, and maximize it."
+  (unless (equal (alist-get 'geometry (frame-monitor-attributes frame))
+                 (alist-get 'geometry monitor))
+    (set-frame-parameter frame 'fullscreen nil)  ; a maximized frame won't move
+    (modify-frame-parameters frame (+sf/frame-position monitor)))
+  (set-frame-parameter frame 'fullscreen 'maximized))
+
+(defun +sf/panel-kind (buffer)
+  "Which panel BUFFER is: `tree', `outline', `term', or nil."
+  (let ((name (buffer-name buffer)))
+    (cond ((and (boundp 'treemacs-buffer-name-prefix)
+                (string-prefix-p treemacs-buffer-name-prefix name))
+           'tree)
+          ((equal name "*Ilist*") 'outline)
+          ((string-match-p "ghostel" name) 'term))))
+
+(defun +sf/display-panel (buffer alist)
+  "Show panel BUFFER in its place in the panel frame.
+The file tree goes top left, the outline top right, the terminal across the
+bottom half; a window that shows no panel is used first.  For use in
+`display-buffer-overriding-action': BUFFERs that aren't panels are left to
+the other display actions."
+  (when-let* ((kind (+sf/panel-kind buffer))
+              ((frame-live-p +sf-panel-frame)))
+    (or (get-buffer-window buffer +sf-panel-frame)
+        (let* ((windows (window-list +sf-panel-frame 'nomini))
+               (find (lambda (k)
+                       (seq-find (lambda (w) (eq k (+sf/panel-kind (window-buffer w))))
+                                 windows)))
+               (spare (funcall find nil))
+               (tree (funcall find 'tree))
+               (outline (funcall find 'outline))
+               (term (funcall find 'term))
+               (window
+                (cond (spare)
+                      ((eq kind 'term)
+                       (split-window (frame-root-window +sf-panel-frame) nil 'below))
+                      ((and (eq kind 'tree) outline) (split-window outline nil 'left))
+                      ((and (eq kind 'outline) tree) (split-window tree nil 'right))
+                      (term (split-window term nil 'above)))))
+          (when window
+            (prog1 (window--display-buffer buffer window (if spare 'reuse 'window) alist)
+              (set-window-dedicated-p window t)))))))
+
+(defun +sf/in-panel-frame-a (fn &rest args)
+  "Run FN in the panel frame, for the current buffer, if there is one.
+Panels FN displays go to their places there."
+  (if (+sf/two-frames-p)
+      (let ((buffer (current-buffer))
+            (display-buffer-overriding-action '((+sf/display-panel))))
+        (with-selected-frame +sf-panel-frame
+          (with-current-buffer buffer
+            (apply fn args))))
+    (apply fn args)))
+(advice-add #'+treemacs/toggle :around #'+sf/in-panel-frame-a)
+(advice-add #'imenu-list-smart-toggle :around #'+sf/in-panel-frame-a)
+
+;; The terminal (C-c o t).  Two frames: the bottom half of the panel frame,
+;; selected when it opens.  One frame: Doom's popups always span the whole frame
+;; width, ignoring `window-sides-vertical', so show it as a plain bottom side
+;; window instead: it then sits under the editor only, like VS Code's terminal
+;; panel.
+(defadvice! +sf/ghostel-placement-a (fn &rest args)
+  :around #'+ghostel/toggle
+  (if (+sf/two-frames-p)
+      (let ((term (apply #'+sf/in-panel-frame-a fn args)))
+        (when-let* ((window (and (bufferp term)
+                                 (get-buffer-window term +sf-panel-frame))))
+          (select-frame-set-input-focus +sf-panel-frame)
+          (select-window window))
+        term)
+    (let ((display-buffer-overriding-action
+           '((display-buffer-in-side-window)
+             (side . bottom) (slot . 0) (window-height . 0.3)
+             (preserve-size . (nil . t)))))
+      (apply fn args))))
+
+(defun +sf/editor-window ()
+  "The editing window of the editor frame used most recently."
+  (car (sort (seq-remove (lambda (w) (or (window-dedicated-p w)
+                                         (window-parameter w 'window-side)))
+                         (window-list +sf-editor-frame 'nomini))
+             (lambda (a b) (> (window-use-time a) (window-use-time b))))))
+
+(defun +sf/show-files-in-editor-frame (buffer alist)
+  "From the panel frame, show file and directory BUFFERs in the editor frame."
+  (when-let* (((+sf/two-frames-p))
+              ((eq (selected-frame) +sf-panel-frame))
+              ((with-current-buffer buffer
+                 (or buffer-file-name (derived-mode-p 'dired-mode))))
+              (window (or (get-buffer-window buffer +sf-editor-frame)
+                          (+sf/editor-window))))
+    ;; `pop-to-buffer' (find-file, the tree, the outline) then moves the focus
+    ;; to the editor frame; `display-buffer' leaves it in the panel frame.
+    (window--display-buffer buffer window 'reuse alist)))
+(setq display-buffer-overriding-action '((+sf/show-files-in-editor-frame)))
+
+;; Treemacs keeps a tree per frame and looks for it in the selected frame only.
+;; Give all frames the panel frame's tree, so it follows the project of the
+;; file in the editor frame.
+(after! treemacs
+  (defadvice! +sf/treemacs-panel-frame-scope-a (fn scope-type)
+    :around #'treemacs-scope->current-scope
+    (if (and (+sf/two-frames-p) (eq scope-type 'treemacs-frame-scope))
+        +sf-panel-frame
+      (funcall fn scope-type)))
+  (defadvice! +sf/treemacs-panel-frame-window-a (fn)
+    :around #'treemacs-get-local-window
+    (or (funcall fn)
+        (and (+sf/two-frames-p)
+             (seq-find (lambda (w) (eq 'tree (+sf/panel-kind (window-buffer w))))
+                       (window-list +sf-panel-frame 'nomini))))))
+
+;; Closing the editor frame from the window manager quits Emacs, as closing the
+;; single frame did; the panel frame alone is no use.
+(defadvice! +sf/quit-with-editor-frame-a (fn event)
+  :around #'handle-delete-frame
+  (if (and (+sf/two-frames-p)
+           (eq (posn-window (event-start event)) +sf-editor-frame))
+      (save-buffers-kill-emacs)
+    (funcall fn event)))
+
+(defun +sf/two-frame-layout (monitors)
+  "Build the two-frame layout on MONITORS, (EDITOR-MONITOR . PANEL-MONITOR)."
+  (require 'treemacs)
+  ;; Treemacs goes in an ordinary window of the panel frame, at whatever width
+  ;; the layout gives it.
+  (setq treemacs-display-in-side-window nil
+        treemacs-width-is-initially-locked nil)
+  (let ((editor (selected-window)))
+    (setq +sf-editor-frame (selected-frame))
+    (+sf/place-frame +sf-editor-frame (car monitors))
+    (unless (frame-live-p +sf-panel-frame)
+      (setq +sf-panel-frame
+            (make-frame `((name . "Doom panels")
+                          (fullscreen . maximized)
+                          ,@(+sf/frame-position (cdr monitors))))))
+    ;; Clear the panel frame down to one spare window, then fill it.
+    (with-selected-frame +sf-panel-frame
+      (let ((ignore-window-parameters t))  ; Treemacs refuses to be deleted
+        (delete-other-windows))
+      (set-window-dedicated-p nil nil)
+      (switch-to-buffer (get-buffer-create " *panels*") t t))
+    (with-selected-window editor
+      (+treemacs/toggle))
+    (with-selected-window editor
+      (imenu-list-smart-toggle))
+    (with-selected-window editor
+      (+ghostel/toggle))
+    (select-frame-set-input-focus +sf-editor-frame)
+    (select-window editor)
+    (setq claude-code-ide-window-width (/ (frame-width) 3))
+    (claude-code-ide)))
+
+(defun +sf/one-frame-layout ()
   "Open file tree, outline, terminal and Claude around the current buffer."
-  (interactive)
   (require 'treemacs)  ; on a fresh start it isn't loaded yet
   (let ((editor (selected-window)))
     (unless (treemacs-get-local-window) (+treemacs/toggle))
@@ -151,6 +362,16 @@
       (+ghostel/toggle))
     (select-window editor)
     (claude-code-ide)))
+
+;; One command for the whole VS Code-like layout: two frames with two monitors,
+;; else one frame with the file tree and outline on the left, the terminal
+;; under the editor and Claude on the right.  C-c o l.
+(defun +sf/ide-layout ()
+  "Lay out the editor, Claude, file tree, outline and terminal."
+  (interactive)
+  (if-let* ((monitors (+sf/monitors)))
+      (+sf/two-frame-layout monitors)
+    (+sf/one-frame-layout)))
 (map! :leader :desc "IDE layout" "o l" #'+sf/ide-layout)
 
 ;; Make it the default: the first time a project file (or the project folder,
