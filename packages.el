@@ -61,7 +61,8 @@
 
 ;; Python (and other) debugging: a Debug Adapter Protocol client driving
 ;; debugpy, the same debug adapter VS Code uses.  Needs no lsp-mode.
-(package! dape)
+;; Commented out because doom debugger loads dape without lsp-mode now
+;;(package! dape)
 
 ;; Proportional font for prose, monospaced code and tables in the same buffer
 (package! mixed-pitch)
