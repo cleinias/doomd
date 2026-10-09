@@ -1,0 +1,699 @@
+\documentclass[10pt,letter]{article}
+
+% Packages
+\usepackage{fancyhdr}           % For header and footer
+\usepackage{multicol}           % Allows multicols in tables
+\usepackage{tabularx}           % Intelligent column widths
+\usepackage{tabulary}           % Used in header and footer
+\usepackage{hhline}             % Border under tables
+\usepackage{graphicx}           % For images
+\usepackage{xcolor}             % For hex colours
+%\usepackage[utf8x]{inputenc}    % For unicode character support
+\usepackage[T1]{fontenc}        % Without this we get weird character replacements
+\usepackage{colortbl}           % For coloured tables
+\usepackage{setspace}           % For line height
+\usepackage{lastpage}           % Needed for total page number
+\usepackage{seqsplit}           % Splits long words.
+%\usepackage{opensans}          % Can't make this work so far. Shame. Would be lovely.
+\usepackage[normalem]{ulem}     % For underlining links
+% Most of the following are not required for the majority
+% of cheat sheets but are needed for some symbol support.
+\usepackage{amsmath}            % Symbols
+\usepackage{MnSymbol}           % Symbols
+\usepackage{wasysym}            % Symbols
+%\usepackage[english,german,french,spanish,italian]{babel}              % Languages
+
+% % Document Info
+% \author{karronqiu}
+% \pdfinfo{
+%   /Title (the-ultimate-doom-emacs.pdf)
+%   /Creator (Cheatography)
+%   /Author (Cleinias)
+%   /Subject (Doom/Emacs Cheat Sheet)
+% }
+
+% Lengths and widths
+\addtolength{\textwidth}{6cm}
+\addtolength{\textheight}{-1cm}
+\addtolength{\hoffset}{-3cm}
+\addtolength{\voffset}{-2cm}
+\setlength{\tabcolsep}{0.2cm} % Space between columns
+\setlength{\headsep}{-12pt} % Reduce space between header and content
+\setlength{\headheight}{85pt} % If less, LaTeX automatically increases it
+\renewcommand{\footrulewidth}{0pt} % Remove footer line
+\renewcommand{\headrulewidth}{0pt} % Remove header line
+\renewcommand{\seqinsert}{\ifmmode\allowbreak\else\-\fi} % Hyphens in seqsplit
+% This two commands together give roughly
+% the right line height in the tables
+\renewcommand{\arraystretch}{1.3}
+\onehalfspacing
+
+% Commands
+\newcommand{\SetRowColor}[1]{\noalign{\gdef\RowColorName{#1}}\rowcolor{\RowColorName}} % Shortcut for row colour
+\newcommand{\mymulticolumn}[3]{\multicolumn{#1}{>{\columncolor{\RowColorName}}#2}{#3}} % For coloured multi-cols
+\newcolumntype{x}[1]{>{\raggedright}p{#1}} % New column types for ragged-right paragraph columns
+\newcommand{\tn}{\tabularnewline} % Required as custom column type in use
+
+% Font and Colours
+\definecolor{HeadBackground}{HTML}{333333}
+\definecolor{FootBackground}{HTML}{666666}
+\definecolor{TextColor}{HTML}{333333}
+\definecolor{DarkBackground}{HTML}{7814A3}
+\definecolor{LightBackground}{HTML}{F6F0F9}
+\renewcommand{\familydefault}{\sfdefault}
+\color{TextColor}
+
+% Header and Footer
+\pagestyle{fancy}
+\fancyhead{} % Set header to blank
+\fancyfoot{} % Set footer to blank
+\fancyhead[L]{
+\noindent
+\begin{multicols}{3}
+\begin{tabulary}{5.8cm}{C}
+%   \SetRowColor{DarkBackground}
+%   \vspace{-7pt}
+%     {\parbox{\dimexpr\textwidth-2\fboxsep\relax}{\noindent
+%         \hspace*{-6pt}\includegraphics[width=5.8cm]{/web/www.cheatography.com/public/images/cheatography_logo.pdf}}
+%     }
+\end{tabulary}
+\columnbreak
+\begin{tabulary}{11cm}{L}
+    \vspace{-2pt}\large{\bf{\textcolor{DarkBackground}{\textrm{Doom/Emacs Cheat Sheet}}}} \\
+    \normalsize{by \textcolor{DarkBackground}{Cleinias} }
+\end{tabulary}
+\end{multicols}}
+
+% \fancyfoot[L]{ \footnotesize
+% \noindent
+% \begin{multicols}{3}
+% \begin{tabulary}{5.8cm}{LL}
+%   \SetRowColor{FootBackground}
+%   \mymulticolumn{2}{p{5.377cm}}{\bf\textcolor{white}{Author}}  \\
+%   \vspace{-2pt}Cleinias \\
+% %  \uline{cheatography.com/karronqiu} \\
+%   \end{tabulary}
+% \vfill
+% \columnbreak
+% \begin{tabulary}{5.8cm}{L}
+%   \SetRowColor{FootBackground}
+%   \mymulticolumn{1}{p{5.377cm}}{\bf\textcolor{white}{Cheat Sheet}}  \\
+%    \vspace{-2pt}Published 13th October, 2022.\\
+%    Updated 9th October, 2022.\\
+%    Page {\thepage} of \pageref{LastPage}.
+% \end{tabulary}
+% \vfill
+% \columnbreak
+% \begin{tabulary}{5.8cm}{L}
+%   \SetRowColor{FootBackground}
+%   \mymulticolumn{1}{p{5.377cm}}{\bf\textcolor{white}{Sponsor}}  \\
+%   \SetRowColor{white}
+%   \vspace{-5pt}
+%   %\includegraphics[width=48px,height=48px]{dave.jpeg}
+%   Measure your website readability!\\
+%   www.readability-score.com
+% \end{tabulary}
+% \end{multicols}}
+
+
+
+
+\begin{document}
+\raggedright
+\raggedcolumns
+
+% Set font size to small.
+\footnotesize % Small font.
+
+\begin{multicols*}{3}
+
+\begin{tabularx}{5.377cm}{p{0.4977 cm} x{4.4793 cm} }
+\SetRowColor{DarkBackground}
+\mymulticolumn{2}{x{5.377cm}}{\bf\textcolor{white}{Command Abbreviations}}  \tn
+% Row 0
+\SetRowColor{LightBackground}
+C & "Control" key \tn 
+% Row Count 1 (+ 1)
+% Row 1
+\SetRowColor{white}
+M & "Alt" or "Option" key \tn 
+% Row Count 2 (+ 1)
+% Row 2
+\SetRowColor{LightBackground}
+S & "Super" or "Command" key \tn 
+% Row Count 3 (+ 1)
+% Row 3
+\SetRowColor{white}
+SPC & "Space" key \tn 
+% Row Count 4 (+ 1)
+\hhline{>{\arrayrulecolor{DarkBackground}}--}
+\end{tabularx}
+\par\addvspace{1.3em}
+
+\begin{tabularx}{5.377cm}{x{0.9954 cm} x{3.9816 cm} }
+\SetRowColor{DarkBackground}
+\mymulticolumn{2}{x{5.377cm}}{\bf\textcolor{white}{Buffers}}  \tn
+% Row 0
+\SetRowColor{LightBackground}
+SPC b b & Open another buffer workspace buffer \tn 
+% Row Count 2 (+ 2)
+% Row 1
+\SetRowColor{white}
+SPC b B & List all the buffer \tn 
+% Row Count 3 (+ 1)
+% Row 2
+\SetRowColor{LightBackground}
+SPC , & Switch buffers (its an alias) \tn 
+% Row Count 4 (+ 1)
+% Row 3
+\SetRowColor{white}
+SPC SHIFT & Switch to all buffers \tn 
+% Row Count 6 (+ 2)
+% Row 4
+\SetRowColor{LightBackground}
+SPC b X & Create a scratch buffer \tn 
+% Row Count 7 (+ 1)
+% Row 5
+\SetRowColor{white}
+SPC b s & Save and name a buffer \tn 
+% Row Count 8 (+ 1)
+\hhline{>{\arrayrulecolor{DarkBackground}}--}
+\SetRowColor{LightBackground}
+\mymulticolumn{2}{x{5.377cm}}{Buffers are a special concept in emacs they can be terminals, files, directories, etc}  \tn 
+\hhline{>{\arrayrulecolor{DarkBackground}}--}
+\end{tabularx}
+\par\addvspace{1.3em}
+
+\begin{tabularx}{5.377cm}{x{1.04517 cm} x{3.93183 cm} }
+\SetRowColor{DarkBackground}
+\mymulticolumn{2}{x{5.377cm}}{\bf\textcolor{white}{Workspaces}}  \tn
+% Row 0
+\SetRowColor{LightBackground}
+SPC TAB n & New workspace \tn 
+% Row Count 2 (+ 2)
+% Row 1
+\SetRowColor{white}
+SPC TAB N & Newly named workspace \tn 
+% Row Count 4 (+ 2)
+% Row 2
+\SetRowColor{LightBackground}
+SPC TAB {[} & Previous workspace \tn 
+% Row Count 6 (+ 2)
+% Row 3
+\SetRowColor{white}
+SPC TAB {]} & Next workspace \tn 
+% Row Count 8 (+ 2)
+% Row 4
+\SetRowColor{LightBackground}
+SPC TAB d & Remove workspace \tn 
+% Row Count 10 (+ 2)
+% Row 5
+\SetRowColor{white}
+SPC TAB R & Restore last session \tn 
+% Row Count 12 (+ 2)
+% Row 6
+\SetRowColor{LightBackground}
+M-1 & Switch to workspace 1 \tn 
+% Row Count 13 (+ 1)
+% Row 7
+\SetRowColor{white}
+M-2 & Switch to workspace 2 and so forth \tn 
+% Row Count 15 (+ 2)
+\hhline{>{\arrayrulecolor{DarkBackground}}--}
+\end{tabularx}
+\par\addvspace{1.3em}
+
+\begin{tabularx}{5.377cm}{x{2.4885 cm} x{2.4885 cm} }
+\SetRowColor{DarkBackground}
+\mymulticolumn{2}{x{5.377cm}}{\bf\textcolor{white}{Projects with Projectile}}  \tn
+% Row 0
+\SetRowColor{LightBackground}
+SPC p p & Open a project \tn 
+% Row Count 1 (+ 1)
+% Row 1
+\SetRowColor{white}
+SPC SPC & Open a file in a project \tn 
+% Row Count 3 (+ 2)
+% Row 2
+\SetRowColor{LightBackground}
+SPC o p & Open the file explorer \tn 
+% Row Count 5 (+ 2)
+% Row 3
+\SetRowColor{white}
+SPC o E & Open the shell (eshell) in fullscreen \tn 
+% Row Count 7 (+ 2)
+% Row 4
+\SetRowColor{LightBackground}
+SPC o e & Open the shell (eshell) in a popup window \tn 
+% Row Count 10 (+ 3)
+% Row 5
+\SetRowColor{white}
+SPC f r & Recently visited files \tn 
+% Row Count 12 (+ 2)
+% Row 6
+\SetRowColor{LightBackground}
+SPC p r & Recently visited files in a project \tn 
+% Row Count 14 (+ 2)
+% Row 7
+\SetRowColor{white}
+M-x \seqsplit{projectile-discover-projects-in-directory} & Find projects within given folder using Projectile \tn 
+% Row Count 17 (+ 3)
+% Row 8
+\SetRowColor{LightBackground}
+M-x \seqsplit{projectile-discover-projects-in-search-path} & Find projects in the folder defined by the \seqsplit{projectile-project-search-path} variable using Projectile \tn 
+% Row Count 22 (+ 5)
+\hhline{>{\arrayrulecolor{DarkBackground}}--}
+\end{tabularx}
+\par\addvspace{1.3em}
+
+\begin{tabularx}{5.377cm}{x{1.24425 cm} x{3.73275 cm} }
+\SetRowColor{DarkBackground}
+\mymulticolumn{2}{x{5.377cm}}{\bf\textcolor{white}{General}}  \tn
+% Row 0
+\SetRowColor{LightBackground}
+SPC f s & Save the current file \tn 
+% Row Count 1 (+ 1)
+% Row 1
+\SetRowColor{white}
+SPC : & Enter a command \tn 
+% Row Count 2 (+ 1)
+% Row 2
+\SetRowColor{LightBackground}
+SPC q q & Close Emacs \tn 
+% Row Count 3 (+ 1)
+% Row 3
+\SetRowColor{white}
+SPC f D & Delete this file \tn 
+% Row Count 4 (+ 1)
+\hhline{>{\arrayrulecolor{DarkBackground}}--}
+\end{tabularx}
+\par\addvspace{1.3em}
+
+\begin{tabularx}{5.377cm}{x{1.59264 cm} x{3.38436 cm} }
+\SetRowColor{DarkBackground}
+\mymulticolumn{2}{x{5.377cm}}{\bf\textcolor{white}{Windows}}  \tn
+% Row 0
+\SetRowColor{LightBackground}
+SPC w v & Window split vertically \tn 
+% Row Count 1 (+ 1)
+% Row 1
+\SetRowColor{white}
+SPC w s & Window split horizontally \tn
+% Row Count 2 (+ 1)
+% Row 2
+\SetRowColor{LightBackground}
+SPC w w & Switch windows \tn 
+% Row Count 3 (+ 1)
+% Row 3
+\SetRowColor{white}
+C-x 5 2 \newline SPC o f & Open new frame with buffer\tn
+% Row Count 3 (+ 1)
+% Row 3
+\SetRowColor{LightBackground}
+SPC w q \newline C-x 5 0& Close window, frame, quit EMACS if last frame \tn
+% Row Count 5 (+ 2)
+% Row 4
+\SetRowColor{white}
+SPC w + and SPC w - & Increase and decrease window height \tn 
+% Row Count 7 (+ 2)
+% Row 5
+\SetRowColor{LightBackground}
+SPC w \textgreater{}  SPC w \textless{} & Increase and decrease window width \tn
+% Row Count 9 (+ 2)
+\hhline{>{\arrayrulecolor{DarkBackground}}--}
+\SetRowColor{LightBackground}
+\mymulticolumn{2}{x{5.377cm}}{You can use vim motion keys to navigate between open windows: \newline M-SPC w h/j/k/l for left/up/down/right. }  \tn
+\hhline{>{\arrayrulecolor{DarkBackground}}--}
+\end{tabularx}
+\par\addvspace{1.3em}
+
+
+\begin{tabularx}{5.377cm}{x{1.59264 cm} x{3.38436 cm} }
+\SetRowColor{DarkBackground}
+\mymulticolumn{2}{x{5.377cm}}{\bf\textcolor{white}{Markdown}}  \tn
+% Row 0
+\SetRowColor{LightBackground}
+SPC m e  & Export to html file \tn
+% Row Count 1 (+ 1)
+% Row 1
+\SetRowColor{white}
+SPC m i & Insert toggle (Headings, etc.)\tn
+% Row Count 2 (+ 1)
+% Row 2
+\SetRowColor{LightBackground}
+SPC m o  & Markdown open  \tn
+% Row Count 3 (+ 1)
+% Row 3
+\SetRowColor{white}
+SPC m p & Preview in browser \tn
+% Row Count 4 (+ 2)
+% Row 4
+\SetRowColor{LightBackground}
+SPC m t e  &  Toggle inline LaTeX \tn
+% Row Count 5 (+ 2)
+% Row 5
+\SetRowColor{white}
+SPC m t f    &  Toggle code highlight\tn
+% Row Count 6 (+ 2)
+% Row 6
+\SetRowColor{LightBackground}
+SPC m t i  &  Toggle image\tn
+% Row Count 7 (+ 2)
+% Row 7
+\SetRowColor{white}
+ SPC m t l    &  Toggle URL hiding\tn
+% Row Count 8 (+ 2)
+% Row 8
+ \SetRowColor{LightBackground}
+SPC m t m  &  Toggle markup hiding\tn
+% Row Count 9 (+ 2)
+% Row 9
+\SetRowColor{white}
+  SPC m t w   &  Toggle wiki links\tn
+% Row Count 10 (+ 2)
+% Row 10
+ \SetRowColor{LightBackground}
+SPC m t x  &  Toggle checkbox\tn
+% Row Count 11 (+ 2)
+% Row 11
+\hhline{>{\arrayrulecolor{DarkBackground}}--}
+\end{tabularx}
+\par\addvspace{1.3em}
+
+\begin{tabularx}{5.377cm}{p{0.74655 cm} x{4.23045 cm} }
+\SetRowColor{DarkBackground}
+\mymulticolumn{2}{x{5.377cm}}{\bf\textcolor{white}{Magit}}  \tn
+% Row 0
+\SetRowColor{LightBackground}
+SPC g g & Shows Magit status page. Most commands are done from the status page. Use tab to expand headlines in the status page. \tn 
+% Row Count 4 (+ 4)
+% Row 1
+\SetRowColor{white}
+? & in Magit's status page for a nice list of available commands and help, {\bf{q}} to close this help page \tn 
+% Row Count 7 (+ 3)
+% Row 2
+\SetRowColor{LightBackground}
+TAB & Open diff view for a file \tn 
+% Row Count 8 (+ 1)
+% Row 3
+\SetRowColor{white}
+s & Press s under "Unstaged changes" to stage a change \tn 
+% Row Count 10 (+ 2)
+% Row 4
+\SetRowColor{LightBackground}
+u & Undo a change \tn 
+% Row Count 11 (+ 1)
+% Row 5
+\SetRowColor{white}
+c & Commit \tn 
+% Row Count 12 (+ 1)
+% Row 6
+\SetRowColor{LightBackground}
+b s & Branch and spinoff to create another branch, rewinding the commits you made to master \tn 
+% Row Count 15 (+ 3)
+% Row 7
+\SetRowColor{white}
+b b & Switch branches \tn 
+% Row Count 16 (+ 1)
+% Row 8
+\SetRowColor{LightBackground}
+t t & Create a tag, default place is the commit you are currently selecting \tn 
+% Row Count 19 (+ 3)
+% Row 9
+\SetRowColor{white}
+V & Select a change in a diff and {\bf{x}} to discard that change. \tn 
+% Row Count 21 (+ 2)
+% Row 10
+\SetRowColor{LightBackground}
+s & Stage \tn 
+% Row Count 22 (+ 1)
+% Row 11
+\SetRowColor{white}
+c & Commit, you can {\bf{q}} to quit the commit screen \tn 
+% Row Count 24 (+ 2)
+% Row 12
+\SetRowColor{LightBackground}
+P & push and then {\bf{p}} to your remote or {\bf{u}} to a another remote \tn 
+% Row Count 26 (+ 2)
+\hhline{>{\arrayrulecolor{DarkBackground}}--}
+\end{tabularx}
+\par\addvspace{1.3em}
+
+\begin{tabularx}{5.377cm}{x{1.14471 cm} x{3.83229 cm} }
+\SetRowColor{DarkBackground}
+\mymulticolumn{2}{x{5.377cm}}{\bf\textcolor{white}{File Tree}}  \tn
+% Row 0
+\SetRowColor{LightBackground}
+SPC o p & Open neotree or treemacs \tn 
+% Row Count 1 (+ 1)
+\hhline{>{\arrayrulecolor{DarkBackground}}--}
+\SetRowColor{LightBackground}
+\mymulticolumn{2}{x{5.377cm}}{Set up neotree or treemacs in your init.el file}  \tn 
+\hhline{>{\arrayrulecolor{DarkBackground}}--}
+\end{tabularx}
+\par\addvspace{1.3em}
+
+\begin{tabularx}{5.377cm}{x{0.9954 cm} x{3.9816 cm} }
+\SetRowColor{DarkBackground}
+\mymulticolumn{2}{x{5.377cm}}{\bf\textcolor{white}{Debugging}}  \tn
+% Row 0
+\SetRowColor{LightBackground}
+SPC o T & Open vterm \tn 
+% Row Count 1 (+ 1)
+% Row 1
+\SetRowColor{white}
+SPC o t & Open vterm in a popup window \tn 
+% Row Count 2 (+ 1)
+\hhline{>{\arrayrulecolor{DarkBackground}}--}
+\SetRowColor{LightBackground}
+\mymulticolumn{2}{x{5.377cm}}{Set up vterm in your init.el file.}  \tn 
+\hhline{>{\arrayrulecolor{DarkBackground}}--}
+\end{tabularx}
+\par\addvspace{1.3em}
+
+\begin{tabularx}{5.377cm}{x{1.9908 cm} x{2.9862 cm} }
+\SetRowColor{DarkBackground}
+\mymulticolumn{2}{x{5.377cm}}{\bf\textcolor{white}{Dired}}  \tn
+% Row 0
+\SetRowColor{LightBackground}
+C-x d & Open dired \tn 
+% Row Count 1 (+ 1)
+% Row 1
+\SetRowColor{white}
+RET & Go to a folder or open a file \tn 
+% Row Count 3 (+ 2)
+% Row 2
+\SetRowColor{LightBackground}
+- & Go one folder back \tn 
+% Row Count 4 (+ 1)
+% Row 3
+\SetRowColor{white}
++ & Create a new directory \tn 
+% Row Count 5 (+ 1)
+% Row 4
+\SetRowColor{LightBackground}
+d & Mark the files for deletion, press {\bf{x}} to delete. \tn
+% Row Count 8 (+ 3)
+% Row 5
+\SetRowColor{white}
+M & Change permissions \tn 
+% Row Count 9 (+ 1)
+% Row 6
+\SetRowColor{LightBackground}
+o & Sort by modes \tn 
+% Row Count 10 (+ 1)
+% Row 7
+\SetRowColor{white}
+O & Change the owner \tn 
+% Row Count 11 (+ 1)
+% Row 8
+\SetRowColor{LightBackground}
+m & Mark and {\bf{u}} to unmark files or directories \tn 
+% Row Count 13 (+ 2)
+% Row 9
+\SetRowColor{white}
+u & Unselect all \tn 
+% Row Count 14 (+ 1)
+% Row 10
+\SetRowColor{LightBackground}
+t & Invert the selection \tn 
+% Row Count 15 (+ 1)
+% Row 11
+\SetRowColor{white}
+t & Switch between files and directories \tn 
+% Row Count 17 (+ 2)
+% Row 12
+\SetRowColor{LightBackground}
+C & Copy \tn 
+% Row Count 18 (+ 1)
+% Row 13
+\SetRowColor{white}
+R & Move \tn 
+% Row Count 19 (+ 1)
+% Row 14
+\SetRowColor{LightBackground}
+h, j, k, l & Move the cursor \tn
+% Row Count 20 (+ 1)
+% Row 15
+\SetRowColor{white}
+( & Toggle a simple view \tn 
+% Row Count 21 (+ 1)
+% Row 16
+\SetRowColor{LightBackground}
+SPC . & Create or find a file \tn 
+% Row Count 22 (+ 1)
+% Row 17
+\SetRowColor{white}
+* & Select all directories \tn 
+% Row Count 23 (+ 1)
+% Row 18
+\SetRowColor{LightBackground}
+C & Copy to another window \tn 
+% Row Count 24 (+ 1)
+% Row 19
+\SetRowColor{white}
+R & Move to another window \tn 
+% Row Count 25 (+ 1)
+% Row 20
+\SetRowColor{LightBackground}
+\seqsplit{dired-do-what-i-mean-target} & Set to true \tn 
+% Row Count 27 (+ 2)
+% Row 21
+\SetRowColor{white}
+i & Edit file/dir name \tn 
+% Row Count 28 (+ 1)
+\hhline{>{\arrayrulecolor{DarkBackground}}--}
+\SetRowColor{LightBackground}
+\mymulticolumn{2}{x{5.377cm}}{Dired (Directory Editor) is how you interfaces with a directory}  \tn 
+\hhline{>{\arrayrulecolor{DarkBackground}}--}
+\end{tabularx}
+\par\addvspace{1.3em}
+
+\begin{tabularx}{5.377cm}{x{1.94103 cm} x{3.03597 cm} }
+\SetRowColor{DarkBackground}
+\mymulticolumn{2}{x{5.377cm}}{\bf\textcolor{white}{Org Mode}}  \tn
+% Row 0
+\SetRowColor{LightBackground}
+* & * for a h1 ** for an h2 and so on \tn 
+% Row Count 2 (+ 2)
+% Row 1
+\SetRowColor{white}
+TAB & Fold a subtree (hide it) on a section \tn 
+% Row Count 4 (+ 2)
+% Row 2
+\SetRowColor{LightBackground}
+SHIFT TAB & Cycle through folded states \tn 
+% Row Count 6 (+ 2)
+% Row 3
+\SetRowColor{white}
+CTRL return & Create a headline of the same type \tn 
+% Row Count 8 (+ 2)
+% Row 4
+\SetRowColor{LightBackground}
+M-arrow up & Shift the position of the section \tn 
+% Row Count 10 (+ 2)
+% Row 5
+\SetRowColor{white}
+M-h & Promotes a headline to the next level \tn 
+% Row Count 12 (+ 2)
+% Row 6
+\SetRowColor{LightBackground}
+M-l & Demotes \tn 
+% Row Count 13 (+ 1)
+% Row 7
+\SetRowColor{white}
+SPC m l & Add a link to an org page \tn 
+% Row Count 15 (+ 2)
+% Row 8
+\SetRowColor{LightBackground}
+:: & Specify a heading or a line number \tn 
+% Row Count 17 (+ 2)
+% Row 9
+\SetRowColor{white}
+SPC n l & Stores a link to a particular headline \tn 
+% Row Count 19 (+ 2)
+% Row 10
+\SetRowColor{LightBackground}
+SPC i s & Insert code snippets \tn 
+% Row Count 20 (+ 1)
+% Row 11
+\SetRowColor{white}
+C-c C-c & Execute the code \tn 
+% Row Count 21 (+ 1)
+% Row 12
+\SetRowColor{LightBackground}
+SPC m ' & Edit inside the babel in another buffer \tn 
+% Row Count 23 (+ 2)
+% Row 13
+\SetRowColor{white}
+TODO & Create a task by prefixing any heading with {\bf{TODO}} \tn 
+% Row Count 26 (+ 3)
+% Row 14
+\SetRowColor{LightBackground}
+DONE & Means the task is done \tn 
+% Row Count 27 (+ 1)
+% Row 15
+\SetRowColor{white}
+SPC m t & Change a status of a todo \tn 
+% Row Count 29 (+ 2)
+% Row 16
+\SetRowColor{LightBackground}
+SHIFT left and SHIFT right & Change the status of a todo as well \tn 
+% Row Count 31 (+ 2)
+\end{tabularx}
+\par\addvspace{1.3em}
+
+\vfill
+\columnbreak
+\begin{tabularx}{5.377cm}{x{1.94103 cm} x{3.03597 cm} }
+\SetRowColor{DarkBackground}
+\mymulticolumn{2}{x{5.377cm}}{\bf\textcolor{white}{Org Mode (cont)}}  \tn
+% Row 17
+\SetRowColor{LightBackground}
+SPC o a t & Open the agenda -\textgreater{} todo list \tn 
+% Row Count 2 (+ 2)
+% Row 18
+\SetRowColor{white}
+q & Quit \tn 
+% Row Count 3 (+ 1)
+% Row 19
+\SetRowColor{LightBackground}
+SHIFT up and SHIFT down & Toggle the priority of tasks \tn 
+% Row Count 5 (+ 2)
+% Row 20
+\SetRowColor{white}
+\seqsplit{org-fancy-priorities} & Gives you fancy looking priorities \tn 
+% Row Count 7 (+ 2)
+% Row 21
+\SetRowColor{LightBackground}
+SPC m q & Tag a headline \tn 
+% Row Count 8 (+ 1)
+% Row 22
+\SetRowColor{white}
+SPC m o & Set a property \tn 
+% Row Count 9 (+ 1)
+% Row 23
+\SetRowColor{LightBackground}
+SHIFT right and SHIFT left & Change the type of lists \tn 
+% Row Count 11 (+ 2)
+% Row 24
+\SetRowColor{white}
+{[} {]} & This is still todo \tn 
+% Row Count 12 (+ 1)
+% Row 25
+\SetRowColor{LightBackground}
+{[}-{]} & This is in progress \tn 
+% Row Count 13 (+ 1)
+% Row 26
+\SetRowColor{white}
+{[}X{]} & This is a done task \tn 
+% Row Count 14 (+ 1)
+\hhline{>{\arrayrulecolor{DarkBackground}}--}
+\end{tabularx}
+\par\addvspace{1.3em}
+
+
+% That's all folks
+\end{multicols*}
+
+\end{document}
