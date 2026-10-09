@@ -453,20 +453,66 @@ SPC o p & Open neotree or treemacs \tn
 \end{tabularx}
 \par\addvspace{1.3em}
 
-\begin{tabularx}{5.377cm}{x{0.9954 cm} x{3.9816 cm} }
+\begin{tabularx}{5.377cm}{x{1.79136 cm} x{3.18564 cm} }
 \SetRowColor{DarkBackground}
 \mymulticolumn{2}{x{5.377cm}}{\bf\textcolor{white}{Debugging}}  \tn
 % Row 0
 \SetRowColor{LightBackground}
-SPC o T & Open vterm \tn 
-% Row Count 1 (+ 1)
+SHIFT F9 & Start debugging, then pick {\bf{debugpy}} \tn
 % Row 1
 \SetRowColor{white}
-SPC o t & Open vterm in a popup window \tn 
-% Row Count 2 (+ 1)
+F9 & Resume \tn
+% Row 2
+\SetRowColor{LightBackground}
+F8 & Step over \tn
+% Row 3
+\SetRowColor{white}
+F7 & Step into \tn
+% Row 4
+\SetRowColor{LightBackground}
+SHIFT F8 & Step out \tn
+% Row 5
+\SetRowColor{white}
+C-SHIFT b \newline left-click fringe & Toggle breakpoint \tn
+% Row 6
+\SetRowColor{LightBackground}
+SHIFT F5 & Stop \tn
+% Row 7
+\SetRowColor{white}
+C-x C-a e \newline middle-click fringe & Conditional breakpoint \tn
+% Row 8
+\SetRowColor{LightBackground}
+C-x C-a l \newline right-click fringe & Log breakpoint (does not stop) \tn
+% Row 9
+\SetRowColor{white}
+C-x C-a u & Run to cursor \tn
+% Row 10
+\SetRowColor{LightBackground}
+C-x C-a x & Evaluate expression, or type it in the REPL \tn
+% Row 11
+\SetRowColor{white}
+C-x C-a w & Add symbol at point to Watch \tn
+% Row 12
+\SetRowColor{LightBackground}
+C-x C-a r & Rerun \tn
+% Row 13
+\SetRowColor{white}
+C-x C-a p & Pause \tn
+% Row 14
+\SetRowColor{LightBackground}
+C-x C-a i & Close or reopen the info panels \tn
+% Row 15
+\SetRowColor{white}
+C-x C-a R & Debug console (REPL) \tn
+% Row 16
+\SetRowColor{LightBackground}
+C-x C-a \textless{} \newline C-x C-a \textgreater{} & Up and down the call stack \tn
+% Row 17
+\SetRowColor{white}
+C-x C-a B & Remove all breakpoints \tn
 \hhline{>{\arrayrulecolor{DarkBackground}}--}
 \SetRowColor{LightBackground}
-\mymulticolumn{2}{x{5.377cm}}{Set up vterm in your init.el file.}  \tn 
+\mymulticolumn{2}{x{5.377cm}}{Python, with dape and debugpy. The F-keys follow PyCharm; all dape commands are under C-x C-a. The fringe is the strip left of the line numbers.}  \tn
 \hhline{>{\arrayrulecolor{DarkBackground}}--}
 \end{tabularx}
 \par\addvspace{1.3em}
