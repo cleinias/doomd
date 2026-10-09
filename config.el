@@ -647,6 +647,18 @@ else a .venv/ or venv/ in the project root, else plain \"python\"."
 (after! evil
   (setq evil-default-state 'emacs))
 
+;; Evil stays loaded only for Doom's leader menu (M-SPC); editing is modeless.
+;; C-z, evil's toggle key, would switch from Emacs state to vi's Normal state,
+;; where letters are commands.  Make C-z undo instead, as in other apps, and
+;; let it lead only back to Emacs state from the vi states, should a buffer
+;; ever start in one.
+(map! :after evil
+      :map evil-emacs-state-map
+      "C-z" #'undo)
+(map! :after evil
+      :map (evil-normal-state-map evil-motion-state-map
+            evil-insert-state-map evil-visual-state-map)
+      "C-z" #'evil-emacs-state)
 
 ;; pdf-tools printing (C-c C-p): use lpr to the default CUPS printer
 ;; instead of prompting for a print program every time.
