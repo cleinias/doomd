@@ -665,3 +665,19 @@ else a .venv/ or venv/ in the project root, else plain \"python\"."
 (after! pdf-misc
   (setq pdf-misc-print-program-executable "/usr/bin/lpr"
         pdf-misc-print-program-args '("-o" "sides=two-sided-long-edge")))
+
+
+;; set okular as preferred pdf viewer for latex,
+;; fall back to pdf tools if okular fails
+;; LaTeX: view PDFs in Okular rather than Evince.
+(setq +latex-viewers '(okular pdf-tools))
+
+;; LaTeX: compile with LuaLaTeX by default.
+(after! tex
+  (setq-default TeX-engine 'luatex))
+
+
+;; Live preview (latexmk -pvc) with LuaLaTeX too.
+(setq auctex-cont-latexmk-command
+      '("latexmk -pvc -lualatex -view=none -e "
+        ("$lualatex=q/lualatex %O -synctex=1 -file-line-error -interaction=nonstopmode %S/")))
