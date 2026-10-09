@@ -5,36 +5,41 @@
 #+latex_header: \usepackage{fontspec}
 #+latex_header: \setmonofont{DejaVu Sans Mono}[Scale=MatchLowercase]
 
-How the dape setup in =config.el= looks and works.  The keys follow PyCharm,
+How the dape setup (Doom's debugger module and =config.el=) looks and works.  The keys follow PyCharm,
 except where KDE takes Ctrl+F1..F12 for switching desktops.
 
 * Keys
 
-| Action                      | PyCharm                      | Here                                |
-|-----------------------------+------------------------------+-------------------------------------|
-| Start debugging             | =Shift+F9=                   | ~S-<f9>~ (then =debugpy=)           |
-| Resume                      | =F9=                         | ~<f9>~                              |
-| Step Over                   | =F8=     >~                              |
-| Step Into                   | =F7=                         | ~<f7>~                              |
-| Step Out                    | =Shift+F8=                   | ~S-<f8>~                            |
-| Toggle breakpoint           | =Ctrl+F8= / click gutter     | ~C-S-b~ / left-click fringe         |
-| Stop                        | =Ctrl+F2=                    | ~S-<f5>~                            |
-| Conditional breakpoint      | right-click breakpoint       | middle-click fringe / ~C-x C-a e~   |
-| Log breakpoint (no suspend) | =Shift=-click gutter         | right-click fringe / ~C-x C-a l~    |
-| Run to Cursor               | =Alt+F9=                     | ~C-x C-a u~                         |
-| Evaluate Expression         | =Alt+F8=                     | ~C-x C-a x~, or type it in the REPL |
-| Add to Watches              | right-click → Add to Watches | ~C-x C-a w~ (symbol at point)       |
-| Rerun                       | =Ctrl+F5=                    | ~C-x C-a r~                         |
-| Pause                       | Pause button                 | ~C-x C-a p~                         |
-| Info panels (close/reopen)  | Debug tool window            | ~C-x C-a i~                         |
-| Debug console               | Console tab                  | ~C-x C-a R~ (REPL)                  |
-| Up/down the call stack      | click in Frames              | ~C-x C-a <~ / ~C-x C-a >~           |
-| Remove all breakpoints      | Remove All Breakpoints       | ~C-x C-a B~                         |
+| Action                      | PyCharm                      | Here                                    |
+|-----------------------------+------------------------------+-----------------------------------------|
+| Start debugging             | =Shift+F9=                   | ~S-<f9>~ / ~SPC d d~ (then =debugpy=)   |
+| Resume                      | =F9=                         | ~<f9>~ / ~SPC d c~                      |
+| Step Over                   | =F8=                         | ~<f8>~ / ~SPC d n~                      |
+| Step Into                   | =F7=                         | ~<f7>~ / ~SPC d s~                      |
+| Step Out                    | =Shift+F8=                   | ~S-<f8>~ / ~SPC d o~                    |
+| Toggle breakpoint           | =Ctrl+F8= / click gutter     | ~C-S-b~ / ~SPC d b~ / left-click fringe |
+| Stop                        | =Ctrl+F2=                    | ~S-<f5>~ / ~SPC d q~                    |
+| Conditional breakpoint      | right-click breakpoint       | middle-click fringe / ~SPC d e~         |
+| Log breakpoint (no suspend) | =Shift=-click gutter         | right-click fringe / ~SPC d l~          |
+| Run to Cursor               | =Alt+F9=                     | ~C-x C-a u~                             |
+| Evaluate Expression         | =Alt+F8=                     | ~SPC d x~, or type it in the REPL       |
+| Add to Watches              | right-click → Add to Watches | ~SPC d w~ (symbol at point)             |
+| Rerun                       | =Ctrl+F5=                    | ~SPC d r~                               |
+| Pause                       | Pause button                 | ~SPC d p~                               |
+| Info panels (close/reopen)  | Debug tool window            | ~SPC d i~                               |
+| Debug console               | Console tab                  | ~SPC d R~ (REPL)                        |
+| Up/down the call stack      | click in Frames              | ~SPC d <~ / ~SPC d >~                   |
+| Remove all breakpoints      | Remove All Breakpoints       | ~SPC d B~                               |
+
+~SPC~ is Doom's leader key (~M-SPC~ in this setup).  Doom's debugger module
+puts dape's commands under ~SPC d~, and ~SPC o d~ also starts a session.  Each
+~SPC d~ key also works as ~C-x C-a~ and the same letter; Run to Cursor has
+only ~C-x C-a u~.  The ~SPC d~ keys always work, the ~C-x C-a~ ones once dape
+has loaded, which happens when a Python file is opened.
 
 ~C-<f8>~ and ~C-<f2>~ are bound too, but only reach Emacs if KDE's "Switch to
-Desktop 8/2" shortcuts are freed.  The ~C-x C-a~ prefix exists once dape has
-loaded, which happens when a Python file is opened.  Not in dape: Smart Step
-Into, Mute Breakpoints, Force Step Into.
+Desktop 8/2" shortcuts are freed.  Not in dape: Smart Step Into, Mute
+Breakpoints, Force Step Into.
 
 * The screen while debugging
 
@@ -96,7 +101,7 @@ Into, Mute Breakpoints, Force Step Into.
 In Scope and Watch, ~RET~ does one of those three things depending on where
 the cursor is: on the =+= / =-= it expands, on the name it adds to Watch, on
 the value it edits.  To watch a variable straight from the code, put the
-cursor on it and press ~C-x C-a w~.
+cursor on it and press ~SPC d w~.
 
 * The REPL
 
@@ -113,8 +118,8 @@ cursor on it and press ~C-x C-a w~.
 
 * Breakpoints that don't just stop
 
-- Conditional: middle-click the fringe (or ~C-x C-a e~) and enter a
+- Conditional: middle-click the fringe (or ~SPC d e~) and enter a
   condition such as ~i == 50~.  The program stops only when it is true.
-- Log: right-click the fringe (or ~C-x C-a l~) and enter a message such as
+- Log: right-click the fringe (or ~SPC d l~) and enter a message such as
   ~step {i}: x={x}~.  The program doesn't stop; each hit prints the message
   in the REPL.  Expressions go in ={}=.
