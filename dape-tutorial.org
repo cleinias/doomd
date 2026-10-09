@@ -4,9 +4,33 @@
 #+latex_compiler: lualatex
 #+latex_header: \usepackage{fontspec}
 #+latex_header: \setmonofont{DejaVu Sans Mono}[Scale=MatchLowercase]
+#+latex_header: \setmainfont{Minion Pro}
+#+latex_header: \setsansfont{Myriad Pro}
+#+latex_header: \date{}
+#+latex_header: \usepackage[top=1.5cm,bottom=1.5cm,left=2cm,right=2cm]{geometry}
 
-How the dape setup (Doom's debugger module and =config.el=) looks and works.  The keys follow PyCharm,
-except where KDE takes Ctrl+F1..F12 for switching desktops.
+
+* The screen while debugging
+
+#+begin_example
+┌─────────────────────────────────┬────────┐
+│ ●  41  def step(x):             │ Claude │
+│ ▶  42      y = x * 2    x: 3    │        │
+│    43      return y + 1         │        │
+│──────────┬──────────┬───────────┤        │
+│ Stack    │ Scope    │ REPL      │        │
+│ (TAB ↻)  │ (TAB ↻)  │           │        │
+└──────────┴──────────┴───────────┴────────┘
+#+end_example
+
+- In the editor, =●= in the fringe is a breakpoint, =▶= marks the line about
+  to run, and the grey text after the current and previous lines shows the
+  values of their variables.
+- Each panel's header line lists its tabs; ~TAB~ / ~S-TAB~ cycle through them,
+  or click one.  Left panel: Stack, Breakpoints, Threads, Modules, Sources.
+  Middle panel: Scope, Watch.
+-  Doom's debugger module puts dape's commands under ~SPC d~, and ~SPC o d~ also starts a session.  Each ~SPC d~ key also works as ~C-x C-a~ and the same letter; Run to Cursor has only ~C-x C-a u~.
+- Not in dape: Smart Step Into, Mute Breakpoints, Force Step Into.
 
 * Keys
 
@@ -30,38 +54,6 @@ except where KDE takes Ctrl+F1..F12 for switching desktops.
 | Debug console               | Console tab                  | ~SPC d R~ (REPL)                        |
 | Up/down the call stack      | click in Frames              | ~SPC d <~ / ~SPC d >~                   |
 | Remove all breakpoints      | Remove All Breakpoints       | ~SPC d B~                               |
-
-~SPC~ is Doom's leader key (~M-SPC~ in this setup).  Doom's debugger module
-puts dape's commands under ~SPC d~, and ~SPC o d~ also starts a session.  Each
-~SPC d~ key also works as ~C-x C-a~ and the same letter; Run to Cursor has
-only ~C-x C-a u~.  The ~SPC d~ keys always work, the ~C-x C-a~ ones once dape
-has loaded, which happens when a Python file is opened.
-
-~C-<f8>~ and ~C-<f2>~ are bound too, but only reach Emacs if KDE's "Switch to
-Desktop 8/2" shortcuts are freed.  Not in dape: Smart Step Into, Mute
-Breakpoints, Force Step Into.
-
-* The screen while debugging
-
-#+begin_example
-┌──────────┬─────────────────────────────────┬────────┐
-│ Treemacs │ ●  41  def step(x):             │ Claude │
-│          │ ▶  42      y = x * 2    x: 3    │        │
-│──────────│    43      return y + 1         │        │
-│ Outline  ├──────────┬──────────┬───────────┤        │
-│          │ Stack    │ Scope    │ REPL      │        │
-│          │ (TAB ↻)  │ (TAB ↻)  │           │        │
-└──────────┴──────────┴──────────┴───────────┴────────┘
-#+end_example
-
-- In the editor, =●= in the fringe (the thin strip at the window's left
-  edge, left of the line numbers) is a breakpoint, =▶= marks the line about
-  to run, and the grey text after the current and previous lines shows the
-  values of their variables.
-- The terminal steps aside while a session runs and comes back on quit.
-- Each panel's header line lists its tabs; ~TAB~ / ~S-TAB~ cycle through them,
-  or click one.  Left panel: Stack, Breakpoints, Threads, Modules, Sources.
-  Middle panel: Scope, Watch.
 
 * A first session
 
