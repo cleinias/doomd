@@ -243,49 +243,51 @@ g r & Refresh \tn
 \end{tabularx}
 \par\addvspace{1.3em}
 
-\begin{tabularx}{5.377cm}{x{2.4885 cm} x{2.4885 cm} }
+\begin{tabularx}{5.377cm}{x{1.6 cm} x{3.377 cm} }
 \SetRowColor{DarkBackground}
 \mymulticolumn{2}{x{5.377cm}}{\bf\textcolor{white}{Projects with Projectile}}  \tn
 % Row 0
 \SetRowColor{LightBackground}
-SPC o w & Open a project in a new two-window session \tn 
-% Row Count 1 (+ 1)
+SPC o w & Open a project in a new two-window session \tn
 % Row 1
 \SetRowColor{white}
-SPC q q & Quit the project (when issued from its editor window) \tn 
-% Row Count 4 (+ 3)
+SPC q q & Quit the project (from its editor window) \tn
 % Row 2
 \SetRowColor{LightBackground}
-SPC SPC & Open a file in a project \tn 
-% Row Count 3 (+ 2)
+SPC SPC \newline SPC p f & Find a file in the project \tn
 % Row 3
 \SetRowColor{white}
-SPC o p & Open the file explorer \tn 
-% Row Count 5 (+ 2)
+SPC p r & Recent files in the project \tn
 % Row 4
 \SetRowColor{LightBackground}
-SPC o E & Open the shell (eshell) in fullscreen \tn 
-% Row Count 7 (+ 2)
+SPC p b & Switch to a buffer of the project \tn
 % Row 5
 \SetRowColor{white}
-SPC o e & Open the shell (eshell) in a popup window \tn 
-% Row Count 10 (+ 3)
+SPC s p & Search text in the project \tn
 % Row 6
 \SetRowColor{LightBackground}
-SPC f r & Recently visited files \tn 
-% Row Count 12 (+ 2)
+SPC p s & Save all the project's files \tn
 % Row 7
 \SetRowColor{white}
-SPC p r & Recently visited files in a project \tn 
-% Row Count 14 (+ 2)
+SPC p k & Kill all the project's buffers \tn
 % Row 8
 \SetRowColor{LightBackground}
-M-x \seqsplit{projectile-discover-projects-in-directory} & Find projects within a given folder using Projectile \tn 
-% Row Count 17 (+ 3)
+SPC p ! & Run a shell command in the project root \tn
 % Row 9
 \SetRowColor{white}
-M-x \seqsplit{projectile-discover-projects-in-search-path} & Find projects in the folder defined by the \seqsplit{projectile-project-search-path} variable using Projectile \tn 
-% Row Count 22 (+ 5)
+SPC p c / R / T & Compile / run / test the project \tn
+% Row 10
+\SetRowColor{LightBackground}
+SPC p a / d & Add / remove a known project \tn
+% Row 11
+\SetRowColor{white}
+SPC p D & Discover projects in a folder \tn
+% Row 12
+\SetRowColor{LightBackground}
+SPC p p & Switch project in this Emacs (prefer SPC o w) \tn
+\hhline{>{\arrayrulecolor{DarkBackground}}--}
+\SetRowColor{LightBackground}
+\mymulticolumn{2}{x{5.377cm}}{A project is any folder with a .git (or .projectile) in it. SPC p shows the whole menu, ESC closes it.}  \tn
 \hhline{>{\arrayrulecolor{DarkBackground}}--}
 \end{tabularx}
 \par\addvspace{1.3em}
@@ -296,48 +298,42 @@ M-x \seqsplit{projectile-discover-projects-in-search-path} & Find projects in th
 % Row 0
 \SetRowColor{LightBackground}
 SPC m e  & Export to html file \tn
-% Row Count 1 (+ 1)
 % Row 1
 \SetRowColor{white}
-SPC m i & Insert toggle (Headings, etc.)\tn
-% Row Count 2 (+ 1)
+SPC m E & Export to PDF (pandoc, LuaLaTeX) \tn
 % Row 2
 \SetRowColor{LightBackground}
-SPC m o  & Markdown open  \tn
-% Row Count 3 (+ 1)
+SPC m i & Insert toggle (Headings, etc.) \tn
 % Row 3
 \SetRowColor{white}
-SPC m p & Preview in browser \tn
-% Row Count 4 (+ 2)
+SPC m o  & Markdown open \tn
 % Row 4
 \SetRowColor{LightBackground}
-SPC m t e  &  Toggle inline LaTeX \tn
-% Row Count 5 (+ 2)
+SPC m p & Preview in browser \tn
 % Row 5
 \SetRowColor{white}
-SPC m t f    &  Toggle code highlight\tn
-% Row Count 6 (+ 2)
+C-c C-c l & Live preview in eww (own frame) \tn
 % Row 6
 \SetRowColor{LightBackground}
-SPC m t i  &  Toggle image\tn
-% Row Count 7 (+ 2)
+SPC m t e  &  Toggle inline LaTeX \tn
 % Row 7
 \SetRowColor{white}
- SPC m t l    &  Toggle URL hiding\tn
-% Row Count 8 (+ 2)
+SPC m t f    &  Toggle code highlight \tn
 % Row 8
- \SetRowColor{LightBackground}
-SPC m t m  &  Toggle markup hiding\tn
-% Row Count 9 (+ 2)
+\SetRowColor{LightBackground}
+SPC m t i  &  Toggle image \tn
 % Row 9
 \SetRowColor{white}
-  SPC m t w   &  Toggle wiki links\tn
-% Row Count 10 (+ 2)
+SPC m t l    &  Toggle URL hiding \tn
 % Row 10
- \SetRowColor{LightBackground}
-SPC m t x  &  Toggle checkbox\tn
-% Row Count 11 (+ 2)
+\SetRowColor{LightBackground}
+SPC m t m  &  Toggle markup hiding \tn
 % Row 11
+\SetRowColor{white}
+SPC m t w   &  Toggle wiki links \tn
+% Row 12
+\SetRowColor{LightBackground}
+SPC m t x  &  Toggle checkbox \tn
 \hhline{>{\arrayrulecolor{DarkBackground}}--}
 \end{tabularx}
 \par\addvspace{1.3em}
@@ -448,10 +444,10 @@ P & Push and then {\bf{p}} to your remote or {\bf{u}} to another remote \tn
 \mymulticolumn{2}{x{5.377cm}}{\bf\textcolor{white}{Code (LSP)}}  \tn
 % Row 0
 \SetRowColor{LightBackground}
-gd \newline SPC c d & Go to definition (C-o jumps back) \tn
+M-. \newline SPC c d & Go to definition (M-, jumps back) \tn
 % Row 1
 \SetRowColor{white}
-gD \newline SPC c D & Find references \tn
+M-? \newline SPC c D & Find references \tn
 % Row 2
 \SetRowColor{LightBackground}
 SPC c y & Who calls this function (incoming calls) \tn
@@ -463,7 +459,7 @@ SPC c Y & What this function calls (outgoing calls) \tn
 SPC c R & References as a tree \tn
 % Row 5
 \SetRowColor{white}
-K \newline SPC c k & Show documentation of the symbol under the cursor \tn
+SPC c k & Show documentation of the symbol under the cursor \tn
 % Row 6
 \SetRowColor{LightBackground}
 SPC c i & Find implementations \tn
@@ -496,7 +492,7 @@ SPC c x & List errors and warnings \tn
 SPC c X & Errors list for the whole project \tn
 % Row 16
 \SetRowColor{LightBackground}
-{]}e \newline {[}e & Next / previous error \tn
+M-g n \newline M-g p & Next / previous error \tn
 % Row 17
 \SetRowColor{white}
 SPC c l w r & Restart the language server \tn
@@ -576,95 +572,98 @@ SPC d B & Remove all breakpoints \tn
 \mymulticolumn{2}{x{5.377cm}}{\bf\textcolor{white}{Dired}}  \tn
 % Row 0
 \SetRowColor{LightBackground}
-C-x d & Open dired \tn 
-% Row Count 1 (+ 1)
+C-x d & Open dired \tn
 % Row 1
 \SetRowColor{white}
-RET & Go to a folder or open a file \tn 
-% Row Count 3 (+ 2)
+RET & Go to a folder or open a file \tn
 % Row 2
 \SetRowColor{LightBackground}
-- & Go one folder back \tn 
-% Row Count 4 (+ 1)
+- & Go one folder back \tn
 % Row 3
 \SetRowColor{white}
-+ & Create a new directory \tn 
-% Row Count 5 (+ 1)
++ & Create a new directory \tn
 % Row 4
 \SetRowColor{LightBackground}
 d & Mark the files for deletion, press {\bf{x}} to delete. \tn
-% Row Count 8 (+ 3)
 % Row 5
 \SetRowColor{white}
-M & Change permissions \tn 
-% Row Count 9 (+ 1)
+M & Change permissions \tn
 % Row 6
 \SetRowColor{LightBackground}
-o & Sort by modes \tn 
-% Row Count 10 (+ 1)
+o & Sort by modes \tn
 % Row 7
 \SetRowColor{white}
-O & Change the owner \tn 
-% Row Count 11 (+ 1)
+O & Change the owner \tn
 % Row 8
 \SetRowColor{LightBackground}
-m & Mark and {\bf{u}} to unmark files or directories \tn 
-% Row Count 13 (+ 2)
+m & Mark and {\bf{u}} to unmark files or directories \tn
 % Row 9
 \SetRowColor{white}
-u & Unselect all \tn 
-% Row Count 14 (+ 1)
+u & Unselect all \tn
 % Row 10
 \SetRowColor{LightBackground}
-t & Invert the selection \tn 
-% Row Count 15 (+ 1)
+t & Invert the selection \tn
 % Row 11
 \SetRowColor{white}
-t & Switch between files and directories \tn 
-% Row Count 17 (+ 2)
+C & Copy \tn
 % Row 12
 \SetRowColor{LightBackground}
-C & Copy \tn 
-% Row Count 18 (+ 1)
+R & Move \tn
 % Row 13
 \SetRowColor{white}
-R & Move \tn 
-% Row Count 19 (+ 1)
+h, j, k, l & Move the cursor \tn
 % Row 14
 \SetRowColor{LightBackground}
-h, j, k, l & Move the cursor \tn
-% Row Count 20 (+ 1)
+( & Toggle a simple view \tn
 % Row 15
 \SetRowColor{white}
-( & Toggle a simple view \tn 
-% Row Count 21 (+ 1)
+SPC . & Create or find a file \tn
 % Row 16
 \SetRowColor{LightBackground}
-SPC . & Create or find a file \tn 
-% Row Count 22 (+ 1)
+* & Select all directories \tn
 % Row 17
 \SetRowColor{white}
-* & Select all directories \tn 
-% Row Count 23 (+ 1)
+\seqsplit{dired-dwim-target} & On in Doom: C and R offer the folder in the other window \tn
 % Row 18
 \SetRowColor{LightBackground}
-C & Copy to another window \tn 
-% Row Count 24 (+ 1)
-% Row 19
-\SetRowColor{white}
-R & Move to another window \tn 
-% Row Count 25 (+ 1)
-% Row 20
-\SetRowColor{LightBackground}
-\seqsplit{dired-do-what-i-mean-target} & Set to true \tn 
-% Row Count 27 (+ 2)
-% Row 21
-\SetRowColor{white}
-i & Edit file/dir name \tn 
-% Row Count 28 (+ 1)
+i & Edit file/dir name \tn
 \hhline{>{\arrayrulecolor{DarkBackground}}--}
 \SetRowColor{LightBackground}
 \mymulticolumn{2}{x{5.377cm}}{Dired (Directory Editor) is how you interface with a directory}  \tn 
+\hhline{>{\arrayrulecolor{DarkBackground}}--}
+\end{tabularx}
+\par\addvspace{1.3em}
+
+\begin{tabularx}{5.377cm}{x{1.6 cm} x{3.377 cm} }
+\SetRowColor{DarkBackground}
+\mymulticolumn{2}{x{5.377cm}}{\bf\textcolor{white}{PDF (pdf-tools)}}  \tn
+% Row 0
+\SetRowColor{LightBackground}
+SPC m p \newline C-c C-p & Print (two-sided) \tn
+% Row 1
+\SetRowColor{white}
+SPC m g & Go to page \tn
+% Row 2
+\SetRowColor{LightBackground}
+SPC m o & Outline (table of contents) \tn
+% Row 3
+\SetRowColor{white}
+SPC m s & Search, listing all hits \tn
+% Row 4
+\SetRowColor{LightBackground}
+SPC m l & Follow a link \tn
+% Row 5
+\SetRowColor{white}
+SPC m f / w & Fit page / fit width \tn
+% Row 6
+\SetRowColor{LightBackground}
+SPC m d & Dark mode \tn
+% Row 7
+\SetRowColor{white}
+SPC m a & List annotations \tn
+% Row 8
+\SetRowColor{LightBackground}
+C-click \newline double-click & Jump to the TeX source line (needs synctex) \tn
 \hhline{>{\arrayrulecolor{DarkBackground}}--}
 \end{tabularx}
 \par\addvspace{1.3em}
