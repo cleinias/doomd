@@ -54,9 +54,19 @@
 % Font and Colours
 \definecolor{HeadBackground}{HTML}{333333}
 \definecolor{FootBackground}{HTML}{666666}
+% Black-and-white print version: build with
+%   lualatex -jobname=Doom-emacs-cheatsheet-SF-print "\def\bwprint{}\input{Doom-emacs-cheatsheet-SF}"
+% Purple and pale stripes turn into faint grey on paper, so it uses black
+% headers and a darker grey stripe instead.
+\ifdefined\bwprint
+\definecolor{TextColor}{HTML}{000000}
+\definecolor{DarkBackground}{HTML}{000000}
+\definecolor{LightBackground}{HTML}{D9D9D9}
+\else
 \definecolor{TextColor}{HTML}{333333}
 \definecolor{DarkBackground}{HTML}{7814A3}
 \definecolor{LightBackground}{HTML}{F6F0F9}
+\fi
 \renewcommand{\familydefault}{\sfdefault}
 \color{TextColor}
 
@@ -189,39 +199,42 @@ j / k & Move down / up \tn
 RET \newline l & Open a file, or expand a folder \tn
 % Row 4
 \SetRowColor{LightBackground}
-TAB & Expand or collapse a folder \tn
+o x & Open in external application \tn
 % Row 5
 \SetRowColor{white}
-h & Collapse the folder \tn
+TAB & Expand or collapse a folder \tn
 % Row 6
 \SetRowColor{LightBackground}
-c f / c d & Create a file / a folder \tn
+h & Collapse the folder \tn
 % Row 7
 \SetRowColor{white}
-R & Rename \tn
+c f / c d & Create a file / a folder \tn
 % Row 8
 \SetRowColor{LightBackground}
-m & Move \tn
+R & Rename \tn
 % Row 9
 \SetRowColor{white}
-d & Delete \tn
+m & Move \tn
 % Row 10
 \SetRowColor{LightBackground}
-y f & Copy the file \tn
+d & Delete \tn
 % Row 11
 \SetRowColor{white}
-y a / y r & Copy the absolute / relative path \tn
+y f & Copy the file \tn
 % Row 12
 \SetRowColor{LightBackground}
-t h & Show or hide dotfiles \tn
+y a / y r & Copy the absolute / relative path \tn
 % Row 13
 \SetRowColor{white}
-t i & Show or hide git-ignored files \tn
+t h & Show or hide dotfiles \tn
 % Row 14
 \SetRowColor{LightBackground}
-g r & Refresh \tn
+t i & Show or hide git-ignored files \tn
 % Row 15
 \SetRowColor{white}
+g r & Refresh \tn
+% Row 16
+\SetRowColor{LightBackground}
 ? & List of all the tree's keys \tn
 \hhline{>{\arrayrulecolor{DarkBackground}}--}
 \SetRowColor{LightBackground}
