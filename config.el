@@ -1,3 +1,4 @@
+
 ;;; $DOOMDIR/config.el -*- lexical-binding: t; -*-
 
 ;; Place your private configuration here! Remember, you do not need to run 'doom
@@ -681,3 +682,37 @@ else a .venv/ or venv/ in the project root, else plain \"python\"."
 (setq auctex-cont-latexmk-command
       '("latexmk -pvc -lualatex -view=none -e "
         ("$lualatex=q/lualatex %O -synctex=1 -file-line-error -interaction=nonstopmode %S/")))
+
+;; Markdown: insert a local picture, picked with file-name completion.
+(defun +sf/markdown-insert-image-file (file)
+  "Insert Markdown image markup for FILE, relative to this file."
+  (interactive (list (read-file-name "Image file: ")))
+  (insert (format "![%s](%s)" (file-name-base file) (file-relative-name file))))
+
+(map! :after markdown-mode
+      :map markdown-mode-map
+      :localleader
+      "i i" #'+sf/markdown-insert-image-file
+      :desc "Insert reference" "i r" #'citar-insert-citation)
+
+;; Location of my general bibliography for diret citation in markdown
+(setq citar-bibliography '("~/Documents/Books/Play-and-Passivity/Global-biblio.bib"))
+
+;; ace-window (C-x o): letter every window in every frame, treemacs included.
+;; Treemacs puts itself in `aw-ignored-buffers' when ace-window loads, so take
+;; it out again just before each call.
+(after! ace-window
+  (setq aw-scope 'global)
+  ;; Draw the letters in posframes centred on each window: the inline overlay
+  ;; shows only an empty red box over treemacs's icon line.
+  (ace-window-posframe-mode 1))
+(defadvice! +sf/aw-include-treemacs (&rest _)
+  :before #'ace-window
+  (setq aw-ignored-buffers (delq 'treemacs-mode aw-ignored-buffers)))
+
+;; Spelling: check against English, French, Italian and German at once, so
+;; quotations in the notes are not flagged (hunspell multi-dictionary).
+(after! ispell
+  (ispell-set-spellchecker-params)
+  (ispell-hunspell-add-multi-dic "en_US,fr_FR,it_IT,de_DE")
+  (setq ispell-dictionary "en_US,fr_FR,it_IT,de_DE"))
