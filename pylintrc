@@ -1,0 +1,10 @@
+# Global pylint settings (a project's own pylintrc or pyproject.toml overrides this).
+# My code uses camelCase for functions, methods, variables and attributes.
+# Linked from ~/.config/pylintrc:  ln -s ~/.doom.d/pylintrc ~/.config/pylintrc
+[BASIC]
+function-naming-style=camelCase
+method-naming-style=camelCase
+argument-naming-style=camelCase
+variable-naming-style=camelCase
+attr-naming-style=camelCase
+class-attribute-naming-style=any
