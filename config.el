@@ -616,6 +616,35 @@ else a .venv/ or venv/ in the project root, else plain \"python\"."
   (let ((markdown-command "pandoc -f gfm -t html5 -s"))
     (markdown-preview)))
 
+;; Export to PDF next to the markdown file: pandoc, typeset with LuaLaTeX in
+;; the fonts above.  Runs in the background; on failure pandoc's messages
+;; pop up.  SPC m E (M-SPC m E).
+(defun my/markdown-export-pdf ()
+  "Export the markdown buffer to a PDF file next to it, with pandoc."
+  (interactive)
+  (save-buffer)
+  (let* ((in (buffer-file-name))
+         (out (concat (file-name-sans-extension in) ".pdf"))
+         (log (get-buffer-create "*markdown-pdf*")))
+    (with-current-buffer log (erase-buffer))
+    (message "Exporting %s..." (file-name-nondirectory out))
+    (make-process
+     :name "markdown-pdf" :buffer log
+     :command (list "pandoc" "-f" "markdown" in "-o" out
+                    "--pdf-engine=lualatex"
+                    "-V" "mainfont=Minion Pro" "-V" "sansfont=Myriad Pro"
+                    "-V" "mathfont=Libertinus Math")
+     :sentinel (lambda (proc _event)
+                 (when (memq (process-status proc) '(exit signal))
+                   (if (zerop (process-exit-status proc))
+                       (message "Wrote %s" out)
+                     (display-buffer (process-buffer proc))
+                     (message "PDF export failed, see *markdown-pdf*")))))))
+(map! :after markdown-mode
+      :map markdown-mode-map
+      :localleader
+      :desc "Export to PDF" "E" #'my/markdown-export-pdf)
+
 ;; Live preview (C-c C-c l) renders in eww, in its own Emacs frame.
 ;; An entry in `display-buffer-alist' does not survive Doom's popup
 ;; system (+popup-mode replaces the alist), so override the function
@@ -666,6 +695,22 @@ else a .venv/ or venv/ in the project root, else plain \"python\"."
 (after! pdf-misc
   (setq pdf-misc-print-program-executable "/usr/bin/lpr"
         pdf-misc-print-program-args '("-o" "sides=two-sided-long-edge")))
+
+;; Doom's pdf module puts nothing under the local leader, so SPC m (M-SPC m)
+;; is undefined in PDFs.  Give it the commands otherwise hidden behind
+;; pdf-tools' own keys.
+(map! :after pdf-view
+      :map pdf-view-mode-map
+      :localleader
+      :desc "Print"                "p" #'pdf-misc-print-document
+      :desc "Go to page"           "g" #'pdf-view-goto-page
+      :desc "Outline"              "o" #'pdf-outline
+      :desc "Search (list hits)"   "s" #'pdf-occur
+      :desc "Follow a link"        "l" #'pdf-links-action-perform
+      :desc "Fit page"             "f" #'pdf-view-fit-page-to-window
+      :desc "Fit width"            "w" #'pdf-view-fit-width-to-window
+      :desc "Dark mode"            "d" #'pdf-view-midnight-minor-mode
+      :desc "List annotations"     "a" #'pdf-annot-list-annotations)
 
 
 ;; set okular as preferred pdf viewer for latex,
