@@ -1,6 +1,17 @@
 
 ;;; $DOOMDIR/config.el -*- lexical-binding: t; -*-
 
+;; Drop any Claude Code session variables this Emacs inherited (e.g. when it was
+;; launched from a shell inside a Claude session).  Otherwise the Claude started in
+;; ghostel, and every Emacs opened with `SPC o w', inherit a stale session's
+;; identity, and their transcripts are not saved (seen 2026-10-16 → 10-21).
+(setq process-environment
+      (seq-remove (lambda (e)
+                    (string-match-p
+                     "\\`\\(CLAUDECODE\\|CLAUDE_CODE_[A-Z_]*\\|CLAUDE_PID\\|CLAUDE_EFFORT\\|AI_AGENT\\)="
+                     e))
+                  process-environment))
+
 ;; Place your private configuration here! Remember, you do not need to run 'doom
 ;; sync' after modifying this file!
 
@@ -418,6 +429,8 @@ Panels FN displays go to their places there."
       desktop-save t)                          ; save without asking
 (defvar +sf-desktop-dir nil
   "Where this session's project desktop lives, once a project is opened.")
+(defvar +sf-project-root nil
+  "This session's project: the one Doom was launched on.")
 
 (defun +sf/project-startup ()
   "Restore the project's saved files, then build the IDE layout."
@@ -428,7 +441,8 @@ Panels FN displays go to their places there."
                                 (replace-regexp-in-string
                                  "/" "!" (directory-file-name root)))))
     (make-directory dir t)
-    (setq +sf-desktop-dir dir)
+    (setq +sf-desktop-dir dir
+          +sf-project-root root)
     (desktop-read dir)
     ;; Launched on a folder (`doom run'): the editor shows the most recent
     ;; restored file, or else an empty buffer, instead of a dired listing;
@@ -466,10 +480,13 @@ Panels FN displays go to their places there."
                   "--init-directory" doom-emacs-dir default-directory)))
 (map! :leader :desc "Project in new window" "o w" #'+sf/open-project-window)
 
-;; The file tree always shows the project of the current buffer, and only that:
-;; no saved project list to manage.
+;; The file tree always shows this session's project, and only that: the one
+;; Doom was launched on, even while the editor shows a file of a project nested
+;; in it (Homeo inside Cybernetics-research).  No saved project list to manage.
 (after! treemacs
-  (treemacs-project-follow-mode +1))
+  (defadvice! +sf/treemacs-session-project-a (fn)
+    :around #'treemacs--find-current-user-project
+    (or +sf-project-root (funcall fn))))
 
 ;; Python debugging with dape: a Debug Adapter Protocol client driving debugpy,
 ;; the same debug adapter VS Code uses.  debugpy must be installed for the
