@@ -1,4 +1,4 @@
-% Created 2026-09-30 Wed 15:28
+% Created 2026-10-09 Fri 11:58
 % Intended LaTeX compiler: lualatex
 \documentclass[11pt]{article}
 
@@ -13,7 +13,11 @@
 \usepackage{hyperref}
 \usepackage{fontspec}
 \setmonofont{DejaVu Sans Mono}[Scale=MatchLowercase]
-\date{\today}
+\setmainfont{Minion Pro}
+\setsansfont{Myriad Pro}
+\date{}
+\usepackage[top=1.5cm,bottom=1.5cm,left=2cm,right=2cm]{geometry}
+%\date{\today}
 \title{Debugging Python with dape}
 \hypersetup{
  pdfauthor={},
@@ -27,66 +31,59 @@
 \begin{document}
 
 \maketitle
-How the dape setup in \texttt{config.el} looks and works.  The keys follow PyCharm,
-except where KDE takes Ctrl+F1..F12 for switching desktops.
+\section{The screen while debugging}
+\label{sec:org35d0cca}
+
+\begin{verbatim}
+┌─────────────────────────────────┬────────┐
+│ ●  41  def step(x):             │ Claude │
+│ ▶  42      y = x * 2    x: 3    │        │
+│    43      return y + 1         │        │
+│──────────┬──────────┬───────────┤        │
+│ Stack    │ Scope    │ REPL      │        │
+│ (TAB ↻)  │ (TAB ↻)  │           │        │
+└──────────┴──────────┴───────────┴────────┘
+\end{verbatim}
+
+\begin{itemize}
+\item In the editor, \texttt{●} in the fringe is a breakpoint, \texttt{▶} marks the line about
+to run, and the grey text after the current and previous lines shows the
+values of their variables.
+\item Each panel's header line lists its tabs; \texttt{TAB} / \texttt{S-TAB} cycle through them,
+or click one.  Left panel: Stack, Breakpoints, Threads, Modules, Sources.
+Middle panel: Scope, Watch.
+\item Doom's debugger module puts dape's commands under \texttt{SPC d}, and \texttt{SPC o d} also starts a session.  Each \texttt{SPC d} key also works as \texttt{C-x C-a} and the same letter; Run to Cursor has only \texttt{C-x C-a u}.
+\item Not in dape: Smart Step Into, Mute Breakpoints, Force Step Into.
+\end{itemize}
 \section{Keys}
-\label{sec:org64fe645}
+\label{sec:orgf85dedf}
 
 \begin{center}
 \begin{tabular}{lll}
 Action & PyCharm & Here\\
 \hline
-Start debugging & \texttt{Shift+F9} & \texttt{S-<f9>} (then \texttt{debugpy})\\
-Resume & \texttt{F9} & \texttt{<f9>}\\
-Step Over & \texttt{F8}     >\textasciitilde{}\\
-Step Into & \texttt{F7} & \texttt{<f7>}\\
-Step Out & \texttt{Shift+F8} & \texttt{S-<f8>}\\
-Toggle breakpoint & \texttt{Ctrl+F8} / click gutter & \texttt{C-S-b} / left-click fringe\\
-Stop & \texttt{Ctrl+F2} & \texttt{S-<f5>}\\
-Conditional breakpoint & right-click breakpoint & middle-click fringe / \texttt{C-x C-a e}\\
-Log breakpoint (no suspend) & \texttt{Shift}-click gutter & right-click fringe / \texttt{C-x C-a l}\\
+Start debugging & \texttt{Shift+F9} & \texttt{S-<f9>} / \texttt{SPC d d} (then \texttt{debugpy})\\
+Resume & \texttt{F9} & \texttt{<f9>} / \texttt{SPC d c}\\
+Step Over & \texttt{F8} & \texttt{<f8>} / \texttt{SPC d n}\\
+Step Into & \texttt{F7} & \texttt{<f7>} / \texttt{SPC d s}\\
+Step Out & \texttt{Shift+F8} & \texttt{S-<f8>} / \texttt{SPC d o}\\
+Toggle breakpoint & \texttt{Ctrl+F8} / click gutter & \texttt{C-S-b} / \texttt{SPC d b} / left-click fringe\\
+Stop & \texttt{Ctrl+F2} & \texttt{S-<f5>} / \texttt{SPC d q}\\
+Conditional breakpoint & right-click breakpoint & middle-click fringe / \texttt{SPC d e}\\
+Log breakpoint (no suspend) & \texttt{Shift}-click gutter & right-click fringe / \texttt{SPC d l}\\
 Run to Cursor & \texttt{Alt+F9} & \texttt{C-x C-a u}\\
-Evaluate Expression & \texttt{Alt+F8} & \texttt{C-x C-a x}, or type it in the REPL\\
-Add to Watches & right-click → Add to Watches & \texttt{C-x C-a w} (symbol at point)\\
-Rerun & \texttt{Ctrl+F5} & \texttt{C-x C-a r}\\
-Pause & Pause button & \texttt{C-x C-a p}\\
-Info panels (close/reopen) & Debug tool window & \texttt{C-x C-a i}\\
-Debug console & Console tab & \texttt{C-x C-a R} (REPL)\\
-Up/down the call stack & click in Frames & \texttt{C-x C-a <} / \texttt{C-x C-a >}\\
-Remove all breakpoints & Remove All Breakpoints & \texttt{C-x C-a B}\\
+Evaluate Expression & \texttt{Alt+F8} & \texttt{SPC d x}, or type it in the REPL\\
+Add to Watches & right-click → Add to Watches & \texttt{SPC d w} (symbol at point)\\
+Rerun & \texttt{Ctrl+F5} & \texttt{SPC d r}\\
+Pause & Pause button & \texttt{SPC d p}\\
+Info panels (close/reopen) & Debug tool window & \texttt{SPC d i}\\
+Debug console & Console tab & \texttt{SPC d R} (REPL)\\
+Up/down the call stack & click in Frames & \texttt{SPC d <} / \texttt{SPC d >}\\
+Remove all breakpoints & Remove All Breakpoints & \texttt{SPC d B}\\
 \end{tabular}
 \end{center}
-
-\texttt{C-<f8>} and \texttt{C-<f2>} are bound too, but only reach Emacs if KDE's ``Switch to
-Desktop 8/2'' shortcuts are freed.  The \texttt{C-x C-a} prefix exists once dape has
-loaded, which happens when a Python file is opened.  Not in dape: Smart Step
-Into, Mute Breakpoints, Force Step Into.
-\section{The screen while debugging}
-\label{sec:orga28fd0d}
-
-\begin{verbatim}
-┌──────────┬─────────────────────────────────┬────────┐
-│ Treemacs │ ●  41  def step(x):             │ Claude │
-│          │ ▶  42      y = x * 2    x: 3    │        │
-│──────────│    43      return y + 1         │        │
-│ Outline  ├──────────┬──────────┬───────────┤        │
-│          │ Stack    │ Scope    │ REPL      │        │
-│          │ (TAB ↻)  │ (TAB ↻)  │           │        │
-└──────────┴──────────┴──────────┴───────────┴────────┘
-\end{verbatim}
-
-\begin{itemize}
-\item In the editor, \texttt{●} in the fringe (the thin strip at the window's left
-edge, left of the line numbers) is a breakpoint, \texttt{▶} marks the line about
-to run, and the grey text after the current and previous lines shows the
-values of their variables.
-\item The terminal steps aside while a session runs and comes back on quit.
-\item Each panel's header line lists its tabs; \texttt{TAB} / \texttt{S-TAB} cycle through them,
-or click one.  Left panel: Stack, Breakpoints, Threads, Modules, Sources.
-Middle panel: Scope, Watch.
-\end{itemize}
 \section{A first session}
-\label{sec:orgb7058dc}
+\label{sec:org6a4b14f}
 
 \begin{enumerate}
 \item Open a script and left-click the fringe next to a line inside a function
@@ -108,7 +105,7 @@ program finishes by itself, the REPL says ``Session terminated''; \texttt{S-<f5>
 still closes the panels.
 \end{enumerate}
 \section{The panels}
-\label{sec:orgdf461ba}
+\label{sec:org3592ab2}
 
 \begin{center}
 \begin{tabular}{lll}
@@ -130,9 +127,9 @@ Watch & \texttt{W} & Remove the expression from Watch\\
 In Scope and Watch, \texttt{RET} does one of those three things depending on where
 the cursor is: on the \texttt{+} / \texttt{-} it expands, on the name it adds to Watch, on
 the value it edits.  To watch a variable straight from the code, put the
-cursor on it and press \texttt{C-x C-a w}.
+cursor on it and press \texttt{SPC d w}.
 \section{The REPL}
-\label{sec:orga355352}
+\label{sec:org07a5a68}
 
 \begin{itemize}
 \item It shows everything the program prints.  The program can't read keyboard
@@ -147,12 +144,12 @@ last command, so \texttt{n} \texttt{RET RET RET} steps quickly.
 command instead.  Type a space before the name to see the variable, as in `` n''.
 \end{itemize}
 \section{Breakpoints that don't just stop}
-\label{sec:orgf75866a}
+\label{sec:org4a6ef30}
 
 \begin{itemize}
-\item Conditional: middle-click the fringe (or \texttt{C-x C-a e}) and enter a
+\item Conditional: middle-click the fringe (or \texttt{SPC d e}) and enter a
 condition such as \texttt{i == 50}.  The program stops only when it is true.
-\item Log: right-click the fringe (or \texttt{C-x C-a l}) and enter a message such as
+\item Log: right-click the fringe (or \texttt{SPC d l}) and enter a message such as
 \texttt{step \{i\}: x=\{x\}}.  The program doesn't stop; each hit prints the message
 in the REPL.  Expressions go in \texttt{\{\}}.
 \end{itemize}
