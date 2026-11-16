@@ -427,6 +427,9 @@ Panels FN displays go to their places there."
 (setq desktop-restore-frames nil
       desktop-load-locked-desktop 'check-pid  ; ignore locks left by a crash
       desktop-save t)                          ; save without asking
+;; pdf-view-mode turns this on by itself; restored on its own it errors.
+(with-eval-after-load 'desktop
+  (add-to-list 'desktop-minor-mode-table '(pdf-cache-prefetch-minor-mode nil)))
 (defvar +sf-desktop-dir nil
   "Where this session's project desktop lives, once a project is opened.")
 (defvar +sf-project-root nil
@@ -443,7 +446,11 @@ Panels FN displays go to their places there."
     (make-directory dir t)
     (setq +sf-desktop-dir dir
           +sf-project-root root)
-    (desktop-read dir)
+    ;; A file that fails to reopen must not stop the layout below (2026-11-16:
+    ;; a PDF saved in fundamental-mode while epdfinfo was broken brought back
+    ;; pdf-cache-prefetch-minor-mode, which errors outside PDFView).
+    (with-demoted-errors "Restoring the project's files: %S"
+      (desktop-read dir))
     ;; Launched on a folder (`doom run'): the editor shows the most recent
     ;; restored file, or else an empty buffer, instead of a dired listing;
     ;; files are opened from the tree.
