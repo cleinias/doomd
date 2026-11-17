@@ -63,10 +63,21 @@
   ;; that load listings or minted.
   (add-to-list 'mixed-pitch-fixed-pitch-faces 'font-latex-verbatim-face))
 
+
+(after! mixed-pitch
+  (add-to-list 'mixed-pitch-fixed-pitch-faces 'markdown-table-face))
+
+
+
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
 (setq doom-theme 'modus-operandi-tinted)  ; built in: high-contrast light theme
+;; Warmer, slightly darker paper than the stock tinted palette (#fbf7f0 /
+;; #efe9dd), which looks washed out on the current monitors.
+;;(setq modus-operandi-tinted-palette-overrides
+;;      '((bg-main "#f5edda")
+;;        (bg-dim  "#eae0cb")))
 ;; Specify both a dark and light theme, like so and Doom will choose which one
 ;; to load based on your system light/dark setting:
 ;;
@@ -378,7 +389,7 @@ Panels FN displays go to their places there."
     (select-frame-set-input-focus +sf-editor-frame)
     (select-window editor)
     (setq claude-code-ide-window-width (/ (frame-width) 3))
-    (claude-code-ide)))
+    (+sf/start-claude)))
 
 (defun +sf/one-frame-layout ()
   "Open file tree, outline, terminal and Claude around the current buffer."
@@ -393,6 +404,13 @@ Panels FN displays go to their places there."
                       (window-list))
       (+ghostel/toggle))
     (select-window editor)
+    (+sf/start-claude)))
+
+(defun +sf/start-claude ()
+  "Start Claude in this session's project, whichever buffer is current.
+claude-code-ide takes its directory from the current buffer, which at startup
+may be the dashboard or *scratch*, in ~."
+  (let ((default-directory (or +sf-project-root default-directory)))
     (claude-code-ide)))
 
 ;; One command for the whole VS Code-like layout: two frames with two monitors,
@@ -416,7 +434,10 @@ Panels FN displays go to their places there."
              (or buffer-file-name (derived-mode-p 'dired-mode))
              (doom-project-p))
     (setq +sf-ide-layout-done t)
-    (run-at-time 0 nil #'+sf/project-startup)))
+    ;; Take the buffer and project now: by the time the timer runs, Doom's
+    ;; startup may have made another buffer current (seen 2026-10-22: Claude
+    ;; started in ~).
+    (run-at-time 0 nil #'+sf/project-startup (current-buffer) (doom-project-root))))
 (add-hook 'find-file-hook #'+sf/ide-layout-maybe-h)
 (add-hook 'dired-mode-hook #'+sf/ide-layout-maybe-h)
 
@@ -435,12 +456,11 @@ Panels FN displays go to their places there."
 (defvar +sf-project-root nil
   "This session's project: the one Doom was launched on.")
 
-(defun +sf/project-startup ()
-  "Restore the project's saved files, then build the IDE layout."
+(defun +sf/project-startup (launched root)
+  "Restore the project's saved files, then build the IDE layout.
+LAUNCHED is the buffer Doom was launched on, ROOT its project."
   (require 'desktop)
-  (let* ((root (doom-project-root))
-         (launched (current-buffer))
-         (dir (file-name-concat doom-cache-dir "desktop"
+  (let* ((dir (file-name-concat doom-cache-dir "desktop"
                                 (replace-regexp-in-string
                                  "/" "!" (directory-file-name root)))))
     (make-directory dir t)
@@ -472,6 +492,20 @@ Panels FN displays go to their places there."
           (defun +sf/save-project-desktop-h ()
             (when +sf-desktop-dir
               (desktop-save +sf-desktop-dir t))))
+
+;; Saving only at exit loses the session to a crash or a power cut, and the
+;; next start brings back whatever was open at the last clean quit.  So the
+;; list is also rewritten after a file buffer is killed and when Emacs idles.
+(defun +sf/update-project-desktop ()
+  "Rewrite this session's project desktop, if it has one, keeping the lock."
+  (when +sf-desktop-dir
+    (desktop-save +sf-desktop-dir nil t)))   ; only if the list changed
+(add-hook 'kill-buffer-hook
+          (defun +sf/save-desktop-after-kill-h ()
+            ;; The hook runs before the buffer is gone: save just after.
+            (when buffer-file-name
+              (run-at-time 0 nil #'+sf/update-project-desktop))))
+(run-with-idle-timer 30 t #'+sf/update-project-desktop)
 
 ;; Switching projects = a new window with its own session, like `doom run DIR'
 ;; in a terminal: pick from the projects opened before.  C-c o w.
@@ -790,3 +824,8 @@ else a .venv/ or venv/ in the project root, else plain \"python\"."
   (ispell-set-spellchecker-params)
   (ispell-hunspell-add-multi-dic "en_US,fr_FR,it_IT,de_DE")
   (setq ispell-dictionary "en_US,fr_FR,it_IT,de_DE"))
+
+;; BibTeX: biblatex entry types (@BookInBook); one field per line on C-c C-c
+(after! bibtex
+  (setq bibtex-dialect 'biblatex
+        bibtex-entry-format '(realign)))

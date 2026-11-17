@@ -66,3 +66,6 @@
 
 ;; Proportional font for prose, monospaced code and tables in the same buffer
 (package! mixed-pitch)
+
+;; Major mode for CSV files (align columns, hide fields)
+(package! csv-mode)
