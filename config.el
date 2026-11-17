@@ -633,6 +633,11 @@ else a .venv/ or venv/ in the project root, else plain \"python\"."
 ;;  (setq markdown-command
 ;;        "pandoc -f markdown -t latex -s -V mainfont='Minion Pro' sanseriffont='Myriad Pro' -V mathfont='Libertinus Math'"))
 
+;; markdown's own preview (C-c C-c l, live, and SPC m p) through pandoc, which
+;; knows GitHub's tables; the default `markdown' (markdown.pl) does not
+(after! markdown-mode
+  (setq markdown-command "pandoc -f gfm -t html5 -s --metadata title=preview"))
+
 ;; view markdown in browser
 (defun my/markdown-preview-html ()
   "Preview the markdown buffer as HTML in the browser."
